@@ -59,12 +59,13 @@ export default function Footer() {
                   {site.phoneDisplay}
                 </a>
               </li>
-              <li>
-                <a href={`mailto:${site.email}`} className="transition hover:text-white">
-                  {site.email}
-                </a>
-              </li>
-              <li className="text-navy-300">Envíos a todo {site.areaServed}</li>
+              {site.email && (
+                <li>
+                  <a href={`mailto:${site.email}`} className="transition hover:text-white">
+                    {site.email}
+                  </a>
+                </li>
+              )}
               <li className="pt-2">
                 <Link href="/catalogo" className="transition hover:text-white">
                   Catálogo completo

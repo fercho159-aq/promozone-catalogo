@@ -124,7 +124,8 @@ export default function RootLayout({
             "@type": "ContactPoint",
             telephone: site.phoneE164,
             contactType: "sales",
-            email: site.email,
+            // el correo solo se declara si esta configurado de verdad
+            ...(site.email ? { email: site.email } : {}),
             areaServed: "MX",
             availableLanguage: ["Spanish"],
           },

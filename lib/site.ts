@@ -9,9 +9,9 @@ export const site = {
   tagline: "Más que promocionales",
   url: "https://promozone.com.mx",
   description:
-    "Artículos promocionales personalizados con tu logo en México: termos, tazas, cilindros, textiles, bolígrafos, tecnología, mochilas y llaveros. Cotiza en línea al instante.",
+    "Artículos promocionales personalizados con tu logo en México: termos, tazas, cilindros, textiles, bolígrafos, tecnología, mochilas y llaveros.",
   shortDescription:
-    "Artículos promocionales personalizados con tu logo. Cotización inmediata por WhatsApp.",
+    "Artículos promocionales personalizados con el logo de tu empresa.",
   locale: "es_MX",
   lang: "es-MX",
   country: "MX",
@@ -22,10 +22,15 @@ export const site = {
   phoneDisplay: "+52 55 5074 6699",
   /** Formato E.164 para tel: y datos estructurados */
   phoneE164: "+525550746699",
-  email: "ventas@promozone.com.mx",
+  /** Vacio a proposito: no se ha confirmado una direccion de correo.
+   *  Al llenarlo aparece en header, footer y datos estructurados. */
+  email: "",
 
   /** Zona de servicio declarada en los datos estructurados */
   areaServed: "México",
+
+  /** Texto de la barra superior. Vacio = no se muestra nada de mas. */
+  avisoBarra: "Personalizamos con tu logo",
 
   social: {
     facebook: "",

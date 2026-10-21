@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PromoModal from "@/components/PromoModal";
+import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 import { getCategoriesWithCounts } from "@/lib/catalog";
 import { getContenidoPublico } from "@/lib/contenido";
 import { categoryImages } from "@/lib/products";
@@ -42,6 +43,7 @@ export default async function SiteLayout({
       </main>
       <Footer />
       <PromoModal modal={contenido.modal} promociones={contenido.promociones} />
+      <WhatsAppFlotante config={contenido.flotante} />
     </>
   );
 }

@@ -56,6 +56,17 @@ export type Contenido = {
     titulo: string;
     texto: string;
   };
+  /**
+   * Boton flotante de WhatsApp. El texto apela a la fecha de entrega, que es
+   * una urgencia real: personalizar y producir toma dias. No se usan cuentas
+   * regresivas ni "quedan X lugares" inventados.
+   */
+  flotante: {
+    activo: boolean;
+    titulo: string;
+    texto: string;
+    cta: string;
+  };
 };
 
 export const CONTENIDO_VACIO: Contenido = {
@@ -66,6 +77,13 @@ export const CONTENIDO_VACIO: Contenido = {
     activo: false,
     titulo: "Promociones del mes",
     texto: "Aprovecha los precios especiales de este mes en artículos seleccionados.",
+  },
+  flotante: {
+    activo: true,
+    titulo: "¿Para cuándo lo necesitas?",
+    texto:
+      "Personalizar y producir lleva tiempo. Cuéntanos qué necesitas y para cuándo.",
+    cta: "Cotizar por WhatsApp",
   },
 };
 
@@ -80,6 +98,13 @@ function normalizar(c: Partial<Contenido> | null): Contenido {
       activo: Boolean(c?.modal?.activo),
       titulo: c?.modal?.titulo || CONTENIDO_VACIO.modal.titulo,
       texto: c?.modal?.texto || CONTENIDO_VACIO.modal.texto,
+    },
+    flotante: {
+      // sin guardar aun, el boton viene encendido por defecto
+      activo: c?.flotante ? Boolean(c.flotante.activo) : CONTENIDO_VACIO.flotante.activo,
+      titulo: c?.flotante?.titulo || CONTENIDO_VACIO.flotante.titulo,
+      texto: c?.flotante?.texto || CONTENIDO_VACIO.flotante.texto,
+      cta: c?.flotante?.cta || CONTENIDO_VACIO.flotante.cta,
     },
   };
 }
@@ -102,6 +127,7 @@ export const getContenidoPublico = cache(async () => {
     testimonios: c.testimonios.filter((t) => t.activo),
     casos: c.casos.filter((k) => k.activo),
     modal: c.modal,
+    flotante: c.flotante,
   };
 });
 

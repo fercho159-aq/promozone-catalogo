@@ -7,6 +7,10 @@ import { site, whatsappLink } from "@/lib/site";
    S      -> ComoFunciona
    T      -> PruebaSocial (en su propio archivo, viene del panel)
    O + R  -> Oferta
+
+   Regla de este archivo: aqui solo se describe lo que el sitio HACE y lo que
+   el cliente confirmo. Nada de plazos de entrega, coberturas de envio,
+   tiempos de respuesta ni servicios que no se hayan acordado.
 --------------------------------------------------------------------------- */
 
 const dolores = [
@@ -71,30 +75,31 @@ export function Problema() {
   );
 }
 
+// Cada paso describe algo que el sitio hace hoy, nada mas.
 const pasos = [
   {
     n: "1",
     titulo: "Elige del catálogo",
     texto:
-      "Más de 1,800 artículos con inventario en tiempo real. Si está listado, está disponible.",
+      "Más de 1,800 artículos, con el inventario y el precio tal como los reporta el proveedor.",
   },
   {
     n: "2",
     titulo: "Sube tu logo y velo puesto",
     texto:
-      "Previsualiza tu logo sobre el producto antes de decidir. Nada de imaginárselo.",
+      "Previsualiza tu logo sobre el producto antes de armar la cotización.",
   },
   {
     n: "3",
-    titulo: "Cotiza al instante",
+    titulo: "Arma tu cotización",
     texto:
-      "Eliges color y cantidad, y el sistema te arma la cotización en PDF en el momento.",
+      "Eliges color y cantidad, y descargas la cotización en PDF desde la misma página.",
   },
   {
     n: "4",
-    titulo: "Confirmamos y producimos",
+    titulo: "Nos escribes por WhatsApp",
     texto:
-      "Revisamos técnica de impresión y tiempos contigo por WhatsApp antes de mandar a producción.",
+      "El mensaje sale con el artículo, el color y la cantidad ya capturados, para seguir la conversación.",
   },
 ];
 
@@ -104,13 +109,13 @@ export function ComoFunciona() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-display text-xs font-bold uppercase tracking-[0.25em] text-brand-600">
-            Cómo trabajamos
+            Cómo funciona
           </p>
           <h2 className="mt-3 font-display text-3xl font-extrabold text-navy-900 md:text-4xl">
             Cuatro pasos, sin sorpresas
           </h2>
           <p className="mt-4 text-navy-500">
-            Para que sepas qué vas a recibir antes de soltar un peso.
+            Para que sepas qué vas a pedir antes de hablar con nadie.
           </p>
         </div>
 
@@ -135,13 +140,14 @@ export function ComoFunciona() {
   );
 }
 
+// Funciones que ya existen en el sitio. Si se agrega una promesa comercial,
+// que salga del cliente.
 const incluye = [
-  "Catálogo de más de 1,800 artículos con inventario en tiempo real",
-  "Previsualización de tu logo sobre el producto antes de cotizar",
-  "Descuentos por volumen desde 6 piezas",
-  "Cotización en PDF al instante, sin esperar correos",
-  "Asesoría por WhatsApp sobre técnica de impresión y tiempos",
-  "Envíos a todo México",
+  "Catálogo de más de 1,800 artículos con el inventario del proveedor",
+  "Previsualización de tu logo sobre el producto",
+  "Descuentos por volumen aplicados solos en el cotizador",
+  "Cotización en PDF descargable desde la página",
+  "Envío de la cotización por WhatsApp con un clic",
 ];
 
 export function Oferta() {
@@ -151,14 +157,14 @@ export function Oferta() {
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="font-display text-xs font-bold uppercase tracking-[0.25em] text-brand-600">
-              Qué incluye
+              Qué puedes hacer aquí
             </p>
             <h2 className="mt-3 font-display text-3xl font-extrabold text-navy-900 md:text-4xl">
-              Cotizar con {site.name} no cuesta nada
+              Arma tu cotización en línea
             </h2>
             <p className="mt-4 leading-relaxed text-navy-600">
-              Ni registro, ni anticipo, ni compromiso. Armas tu cotización,
-              la descargas y la compartes con quien autoriza.
+              Sin registro: eliges el artículo, el color y la cantidad, y te
+              llevas la cotización en PDF.
             </p>
 
             <ul className="mt-6 space-y-3">
@@ -182,19 +188,19 @@ export function Oferta() {
               ¿Ya sabes qué necesitas?
             </h3>
             <p className="mt-3 text-navy-200">
-              Dinos para cuándo y cuántas piezas. Te decimos hoy mismo si es
-              viable y cuánto cuesta.
+              Cuéntanos qué artículo, cuántas piezas y para cuándo lo
+              necesitas.
             </p>
             <div className="mt-7 space-y-3">
               <a
                 href={whatsappLink(
-                  `Hola ${site.name}, necesito cotizar artículos promocionales.`,
+                  `Hola ${site.name}, quiero cotizar artículos promocionales.`,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block rounded-full bg-whatsapp px-6 py-3.5 font-display text-lg font-bold text-white transition hover:bg-whatsapp-dark"
               >
-                Cotizar por WhatsApp
+                Escribir por WhatsApp
               </a>
               <Link
                 href="/catalogo"
@@ -203,9 +209,7 @@ export function Oferta() {
                 Explorar el catálogo
               </Link>
             </div>
-            <p className="mt-5 text-xs text-navy-400">
-              Respondemos en horario laboral · {site.phoneDisplay}
-            </p>
+            <p className="mt-5 text-xs text-navy-400">{site.phoneDisplay}</p>
           </div>
         </div>
       </div>

@@ -142,6 +142,75 @@ export default function ContenidoAdminPage() {
         )}
       </div>
 
+      {/* boton flotante */}
+      <div className="mb-6 rounded-xl bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display font-bold text-navy-800">
+              Botón flotante de WhatsApp
+            </h2>
+            <p className="text-xs text-navy-400">
+              Aparece al desplazarse y abre una burbuja una vez por sesión. El
+              mensaje de WhatsApp incluye la página que el visitante está
+              viendo.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-navy-700">
+            <input
+              type="checkbox"
+              checked={c.flotante.activo}
+              onChange={(e) =>
+                setC({ ...c, flotante: { ...c.flotante, activo: e.target.checked } })
+              }
+              className="h-4 w-4 accent-brand-600"
+            />
+            Activo
+          </label>
+        </div>
+
+        {c.flotante.activo && (
+          <>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div>
+                <span className={etiqueta}>Título</span>
+                <input
+                  value={c.flotante.titulo}
+                  onChange={(e) =>
+                    setC({ ...c, flotante: { ...c.flotante, titulo: e.target.value } })
+                  }
+                  className={campo}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <span className={etiqueta}>Texto</span>
+                <input
+                  value={c.flotante.texto}
+                  onChange={(e) =>
+                    setC({ ...c, flotante: { ...c.flotante, texto: e.target.value } })
+                  }
+                  className={campo}
+                />
+              </div>
+              <div>
+                <span className={etiqueta}>Texto del botón</span>
+                <input
+                  value={c.flotante.cta}
+                  onChange={(e) =>
+                    setC({ ...c, flotante: { ...c.flotante, cta: e.target.value } })
+                  }
+                  className={campo}
+                />
+              </div>
+            </div>
+            <p className="mt-3 rounded-lg bg-navy-50 p-3 text-xs text-navy-500">
+              Si pones un plazo (&ldquo;entregamos en 5 días hábiles&rdquo;), que sea el
+              real. Prometer tiempos que no se cumplen cuesta más caro que la
+              venta que gana.
+            </p>
+          </>
+        )}
+      </div>
+
       {/* pestañas */}
       <div className="mb-4 flex flex-wrap gap-2">
         {pestanas.map((p) => (

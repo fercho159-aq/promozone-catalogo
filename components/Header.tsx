@@ -69,14 +69,16 @@ export default function Header({
       {/* barra de contacto */}
       <div className="hidden border-b border-white/10 bg-navy-900 lg:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs text-navy-200">
-          <p>Personalizamos con tu logo · Envíos a todo {site.areaServed}</p>
+          <p>{site.avisoBarra}</p>
           <div className="flex items-center gap-5">
             <a href={`tel:${site.phoneE164}`} className="transition hover:text-white">
               {site.phoneDisplay}
             </a>
-            <a href={`mailto:${site.email}`} className="transition hover:text-white">
-              {site.email}
-            </a>
+            {site.email && (
+              <a href={`mailto:${site.email}`} className="transition hover:text-white">
+                {site.email}
+              </a>
+            )}
           </div>
         </div>
       </div>
