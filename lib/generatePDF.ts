@@ -18,12 +18,16 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header
-  doc.setFillColor(30, 64, 175);
+  doc.setFillColor(16, 42, 74);
   doc.rect(0, 0, pageWidth, 45, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
-  doc.text("PromoShop", 20, 25);
+  doc.text("PROMO", 20, 25);
+  const promoW = doc.getTextWidth("PROMO");
+  doc.setTextColor(255, 90, 98);
+  doc.text("ZONE", 20 + promoW, 25);
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text("Cotización de Productos Promocionales", 20, 37);
@@ -35,12 +39,12 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
   doc.text(`Cotización #${Math.floor(Math.random() * 9000) + 1000}`, pageWidth - 70, 62);
 
   // Client info
-  doc.setTextColor(30, 64, 175);
+  doc.setTextColor(16, 42, 74);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("Datos del Cliente", 20, 75);
 
-  doc.setDrawColor(30, 64, 175);
+  doc.setDrawColor(16, 42, 74);
   doc.line(20, 78, pageWidth - 20, 78);
 
   doc.setTextColor(60, 60, 60);
@@ -54,7 +58,7 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
 
   // Product details
   const productY = data.clientCompany ? 120 : 112;
-  doc.setTextColor(30, 64, 175);
+  doc.setTextColor(16, 42, 74);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("Detalle de Cotización", 20, productY);
@@ -91,12 +95,12 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
   doc.text(`$${(data.unitPrice * data.quantity).toFixed(2)}`, 175, totalsY + 2);
 
   if (data.discount > 0) {
-    doc.setTextColor(220, 38, 38);
+    doc.setTextColor(200, 27, 34);
     doc.text(`Descuento (${data.discount}%):`, 140, totalsY + 12);
     doc.text(`-$${((data.unitPrice * data.quantity * data.discount) / 100).toFixed(2)}`, 175, totalsY + 12);
   }
 
-  doc.setTextColor(30, 64, 175);
+  doc.setTextColor(16, 42, 74);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   const totalLineY = data.discount > 0 ? totalsY + 25 : totalsY + 15;
@@ -111,7 +115,7 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
   const footerY = 270;
   doc.text("Esta cotización es válida por 15 días a partir de la fecha de emisión.", 20, footerY);
   doc.text("Los precios incluyen personalización con su logo.", 20, footerY + 7);
-  doc.text("PromoShop - Artículos Promocionales | WhatsApp: 55 5074 6699", 20, footerY + 14);
+  doc.text("PromoZone - Más que promocionales | promozone.com.mx | WhatsApp: 55 5074 6699", 20, footerY + 14);
 
   return doc;
 }

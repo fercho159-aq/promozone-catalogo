@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Quote {
   id: string;
@@ -16,6 +16,21 @@ interface Quote {
   date: string;
 }
 
+function toCsv(rows: Quote[]): string {
+  const headers = [
+    "Fecha", "Cliente", "Empresa", "Teléfono", "Producto",
+    "Color", "Cantidad", "Precio unitario", "Descuento %", "Total",
+  ];
+  const esc = (v: string | number) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = rows.map((q) =>
+    [
+      q.date, q.clientName, q.clientCompany, q.clientPhone, q.productName,
+      q.productColor, q.quantity, q.unitPrice, q.discount, q.total,
+    ].map(esc).join(","),
+  );
+  return [headers.map(esc).join(","), ...lines].join("\r\n");
+}
+
 export default function CotizacionesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,78 +39,141 @@ export default function CotizacionesPage() {
   useEffect(() => {
     fetch("/api/quotes")
       .then((r) => r.json())
-      .then(setQuotes)
+      .then((d) => setQuotes(Array.isArray(d) ? d : []))
+      .catch(() => setQuotes([]))
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = quotes.filter(
-    (q) =>
-      q.clientName.toLowerCase().includes(search.toLowerCase()) ||
-      q.productName.toLowerCase().includes(search.toLowerCase()) ||
-      q.clientPhone.includes(search)
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return quotes;
+    return quotes.filter(
+      (x) =>
+        x.clientName?.toLowerCase().includes(q) ||
+        x.productName?.toLowerCase().includes(q) ||
+        x.clientCompany?.toLowerCase().includes(q) ||
+        x.clientPhone?.includes(q),
+    );
+  }, [quotes, search]);
+
+  const totals = useMemo(
+    () => ({
+      count: filtered.length,
+      value: filtered.reduce((s, q) => s + (q.total || 0), 0),
+    }),
+    [filtered],
   );
 
+  function downloadCsv() {
+    // BOM para que Excel en español respete los acentos
+    const blob = new Blob(["﻿" + toCsv(filtered)], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cotizaciones-promozone-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Cargando cotizaciones...</div>;
+    return (
+      <div className="flex h-64 items-center justify-center text-navy-400">
+        Cargando cotizaciones…
+      </div>
+    );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Cotizaciones ({quotes.length})</h1>
-        <input
-          type="text"
-          placeholder="Buscar por nombre, producto o teléfono..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 w-80 text-sm text-gray-900"
-        />
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-extrabold text-navy-900">
+            Cotizaciones ({quotes.length})
+          </h1>
+          <p className="text-sm text-navy-500">
+            {totals.count} en pantalla · $
+            {totals.value.toLocaleString("es-MX", { minimumFractionDigits: 2 })} MXN
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="search"
+            placeholder="Buscar por cliente, empresa, producto o teléfono…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-72 rounded-lg border border-navy-200 px-4 py-2 text-sm text-navy-900 placeholder:text-navy-300"
+          />
+          <button
+            onClick={downloadCsv}
+            disabled={filtered.length === 0}
+            className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:opacity-50"
+          >
+            Exportar CSV
+          </button>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-12 text-center">
-          <p className="text-4xl mb-3">📋</p>
-          <p className="text-gray-500">{quotes.length === 0 ? "Aún no hay cotizaciones" : "Sin resultados"}</p>
+        <div className="rounded-xl bg-white p-12 text-center shadow">
+          <p className="mb-3 text-4xl" aria-hidden="true">
+            📋
+          </p>
+          <p className="text-navy-500">
+            {quotes.length === 0 ? "Aún no hay cotizaciones" : "Sin resultados"}
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Cliente</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Teléfono</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Producto</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Color</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-600">Cant.</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-600">Desc.</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-600">Total</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((q) => (
-                <tr key={q.id} className="border-b border-gray-50 hover:bg-blue-50/50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">{q.clientName}</p>
-                    {q.clientCompany && <p className="text-xs text-gray-400">{q.clientCompany}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    <a href={`https://wa.me/52${q.clientPhone.replace(/\s/g, "")}`} target="_blank" className="text-green-600 hover:underline">
-                      {q.clientPhone}
-                    </a>
-                  </td>
-                  <td className="px-4 py-3 text-gray-800">{q.productName}</td>
-                  <td className="px-4 py-3 text-gray-600">{q.productColor}</td>
-                  <td className="px-4 py-3 text-right text-gray-800">{q.quantity}</td>
-                  <td className="px-4 py-3 text-right text-green-600">{q.discount > 0 ? `-${q.discount}%` : "—"}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-blue-700">
-                    ${q.total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">{q.date}</td>
+        <div className="overflow-hidden rounded-xl bg-white shadow">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-navy-100 bg-navy-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-navy-600">Cliente</th>
+                  <th className="px-4 py-3 text-left font-semibold text-navy-600">Teléfono</th>
+                  <th className="px-4 py-3 text-left font-semibold text-navy-600">Producto</th>
+                  <th className="px-4 py-3 text-left font-semibold text-navy-600">Color</th>
+                  <th className="px-4 py-3 text-right font-semibold text-navy-600">Cant.</th>
+                  <th className="px-4 py-3 text-right font-semibold text-navy-600">Desc.</th>
+                  <th className="px-4 py-3 text-right font-semibold text-navy-600">Total</th>
+                  <th className="px-4 py-3 text-left font-semibold text-navy-600">Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((q) => (
+                  <tr key={q.id} className="border-b border-navy-50 hover:bg-navy-50/60">
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-navy-800">{q.clientName}</p>
+                      {q.clientCompany && (
+                        <p className="text-xs text-navy-400">{q.clientCompany}</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={`https://wa.me/52${q.clientPhone?.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-600 hover:underline"
+                      >
+                        {q.clientPhone}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3 text-navy-800">{q.productName}</td>
+                    <td className="px-4 py-3 text-navy-600">{q.productColor}</td>
+                    <td className="px-4 py-3 text-right text-navy-800">{q.quantity}</td>
+                    <td className="px-4 py-3 text-right text-emerald-600">
+                      {q.discount > 0 ? `-${q.discount}%` : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-brand-600">
+                      ${q.total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-4 py-3 text-navy-500">{q.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

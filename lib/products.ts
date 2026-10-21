@@ -1,5 +1,7 @@
 export interface Product {
   id: string;
+  /** Clave interna. Si falta, se deriva en lib/catalog.ts */
+  sku?: string;
   name: string;
   category: string;
   categorySlug: string;

@@ -37,7 +37,16 @@ async function getBlob<T>(key: string, fallback: T): Promise<T> {
   try {
     const { blobs } = await list({ prefix: key });
     if (blobs.length === 0) return fallback;
-    const res = await fetch(blobs[0].url);
+
+    // El blob se reescribe siempre con la misma ruta, asi que el CDN puede
+    // devolver la version anterior justo despues de guardar. La marca de
+    // tiempo de subida rompe esa cache sin perder el cacheo entre versiones.
+    // Nota: no se usa cache "no-store" porque sacaria a las paginas del
+    // prerenderizado estatico; basta con que la URL cambie por version.
+    const stamp = new Date(blobs[0].uploadedAt).getTime();
+    const url = `${blobs[0].url}?v=${Number.isFinite(stamp) ? stamp : Date.now()}`;
+    const res = await fetch(url);
+    if (!res.ok) return fallback;
     return (await res.json()) as T;
   } catch {
     return fallback;

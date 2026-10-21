@@ -1,19 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---------------------------------------------------------------------------
+   Paleta PromoZone — extraida del logo oficial
+   navy  #102A4A  letras "PROMO" y tagline
+   red   #C81B22  letras "ZONE" y monograma PZ
+   cream #FEFCE5  fondo del arte
+   sand  #D8C8B0  cuerpo del termo (mascota)
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-navy-50: #f2f5f9;
+  --color-navy-100: #e2e9f1;
+  --color-navy-200: #c3cfdf;
+  --color-navy-300: #93a8c3;
+  --color-navy-400: #5c7698;
+  --color-navy-500: #35527a;
+  --color-navy-600: #1e3a5f;
+  --color-navy-700: #16304f;
+  --color-navy-800: #102a4a;
+  --color-navy-900: #0b1c33;
+  --color-navy-950: #06111f;
+
+  --color-brand-50: #fdf3f3;
+  --color-brand-100: #fbe1e2;
+  --color-brand-200: #f7c3c5;
+  --color-brand-300: #ef9093;
+  --color-brand-400: #e35a60;
+  --color-brand-500: #d8262e;
+  --color-brand-600: #c81b22;
+  --color-brand-700: #a5151b;
+  --color-brand-800: #7f1014;
+  --color-brand-900: #5c0b0e;
+
+  /* rojo aclarado: el #c81b22 sobre navy solo da 2.5:1 de contraste */
+  --color-brand-onDark: #ff5a62;
+
+  --color-cream-50: #fffef8;
+  --color-cream-100: #fefce5;
+  --color-cream-200: #faf5d2;
+
+  --color-sand-100: #efe7da;
+  --color-sand-200: #e4d6c2;
+  --color-sand-300: #d8c8b0;
+  --color-sand-400: #bfac90;
+
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1da851;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-montserrat), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --background: #ffffff;
+  --foreground: #0b1c33;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* enfoque visible y consistente con la marca */
+*:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* el carrusel y las fichas usan scroll horizontal en movil */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
