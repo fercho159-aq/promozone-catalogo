@@ -31,6 +31,18 @@ export const categories: Category[] = [
   { name: "Llaveros", slug: "llaveros", icon: "🔑", description: "Llaveros metálicos y multifunción" },
 ];
 
+/** Imagen representativa de cada categoria, usada en el mega menu y el home */
+export const categoryImages: Record<string, string> = {
+  termos: "/products/termo-niza.jpeg",
+  tazas: "/products/taza-mabum.jpeg",
+  cilindros: "/products/cilindro-odesa.jpeg",
+  textiles: "/products/playera-yager.jpeg",
+  escritura: "/products/boligrafo-deneb.jpeg",
+  tecnologia: "/products/bocina-bluetooth.jpeg",
+  bolsas: "/products/mochila-ejecutiva.jpeg",
+  llaveros: "/products/llavero-mistral.jpeg",
+};
+
 export const products: Product[] = [
   // TERMOS
   {

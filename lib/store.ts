@@ -33,7 +33,7 @@ export interface StoredProduct {
 const QUOTES_KEY = "data/quotes.json";
 const PRODUCTS_KEY = "data/products.json";
 
-async function getBlob<T>(key: string, fallback: T): Promise<T> {
+export async function getBlob<T>(key: string, fallback: T): Promise<T> {
   try {
     const { blobs } = await list({ prefix: key });
     if (blobs.length === 0) return fallback;
@@ -53,7 +53,7 @@ async function getBlob<T>(key: string, fallback: T): Promise<T> {
   }
 }
 
-async function setBlob<T>(key: string, data: T): Promise<void> {
+export async function setBlob<T>(key: string, data: T): Promise<void> {
   // Delete old blob first
   try {
     const { blobs } = await list({ prefix: key });

@@ -59,5 +59,5 @@ export const mainNav = [
   { href: "/", label: "Inicio" },
   { href: "/#categorias", label: "Categorías" },
   { href: "/catalogo", label: "Catálogo completo" },
-  { href: "/#por-que-nosotros", label: "Por qué nosotros" },
+  { href: "/#como-funciona", label: "Cómo funciona" },
 ] as const;

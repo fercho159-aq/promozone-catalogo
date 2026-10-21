@@ -3,7 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import HeroCarousel from "@/components/HeroCarousel";
 import ProductCard from "@/components/ProductCard";
+import { ComoFunciona, Oferta, Problema } from "@/components/home/Secciones";
+import { CasosExito, Testimonios } from "@/components/home/PruebaSocial";
 import { getCatalog, getCategoriesWithCounts } from "@/lib/catalog";
+import { getContenidoPublico } from "@/lib/contenido";
+import { categoryImages } from "@/lib/products";
 import { site } from "@/lib/site";
 
 // el catalogo vive en Blob y lo edita el admin: refresco cada 5 min
@@ -15,44 +19,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const categoryImages: Record<string, string> = {
-  termos: "/products/termo-niza.jpeg",
-  tazas: "/products/taza-mabum.jpeg",
-  cilindros: "/products/cilindro-odesa.jpeg",
-  textiles: "/products/playera-yager.jpeg",
-  escritura: "/products/boligrafo-deneb.jpeg",
-  tecnologia: "/products/bocina-bluetooth.jpeg",
-  bolsas: "/products/mochila-ejecutiva.jpeg",
-  llaveros: "/products/llavero-mistral.jpeg",
-};
-
-const beneficios = [
-  {
-    icon: "🎨",
-    title: "Personaliza tu producto",
-    text: "Sube tu logo y previsualízalo sobre el artículo antes de cotizar.",
-  },
-  {
-    icon: "💰",
-    title: "Descuentos por volumen",
-    text: "Hasta 10% de descuento a partir de 16 piezas del mismo artículo.",
-  },
-  {
-    icon: "📱",
-    title: "Cotización inmediata",
-    text: "Recibe tu cotización en PDF al instante y envíala por WhatsApp.",
-  },
-];
-
 export default async function Home() {
-  const [cats, products] = await Promise.all([
+  const [cats, products, contenido] = await Promise.all([
     getCategoriesWithCounts(),
     getCatalog(),
+    getContenidoPublico(),
   ]);
 
   const destacados = products.slice(0, 8);
 
-  // ItemList de categorias: ayuda a Google a entender la estructura del catalogo
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -74,44 +49,25 @@ export default async function Home() {
 
       <HeroCarousel />
 
-      {/* beneficios */}
-      <section
-        id="por-que-nosotros"
-        className="scroll-mt-24 border-b border-navy-100 bg-white py-14"
-      >
-        <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-center font-display text-3xl font-extrabold text-navy-900">
-            ¿Por qué comprar en {site.name}?
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {beneficios.map((b) => (
-              <div
-                key={b.title}
-                className="rounded-2xl border border-navy-100 bg-navy-50/50 p-7 text-center transition hover:border-brand-200 hover:bg-cream-50"
-              >
-                <div className="text-4xl" aria-hidden="true">
-                  {b.icon}
-                </div>
-                <h3 className="mt-3 font-display text-lg font-bold text-navy-800">
-                  {b.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-navy-500">{b.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* P + A */}
+      <Problema />
+
+      {/* S */}
+      <ComoFunciona />
 
       {/* categorias */}
-      <section id="categorias" className="scroll-mt-24 py-14 md:py-16">
+      <section id="categorias" className="scroll-mt-24 bg-navy-50 py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center">
-            <h2 className="font-display text-3xl font-extrabold text-navy-900">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="font-display text-xs font-bold uppercase tracking-[0.25em] text-brand-600">
+              Por dónde empezar
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-extrabold text-navy-900 md:text-4xl">
               Nuestras categorías
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-navy-500">
-              {products.length} artículos promocionales listos para personalizar con
-              el logo de tu empresa.
+            <p className="mt-4 text-navy-500">
+              {products.length} artículos seleccionados y listos para
+              personalizar con el logo de tu empresa.
             </p>
           </div>
 
@@ -144,12 +100,21 @@ export default async function Home() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/catalogo"
+              className="inline-block rounded-full border border-navy-200 bg-white px-6 py-3 text-sm font-semibold text-navy-700 transition hover:border-brand-400 hover:text-brand-700"
+            >
+              O explora el catálogo completo, con más de 1,800 artículos →
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* destacados */}
       {destacados.length > 0 && (
-        <section className="bg-white py-14">
+        <section className="bg-white py-16">
           <div className="mx-auto max-w-7xl px-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <h2 className="font-display text-3xl font-extrabold text-navy-900">
@@ -170,6 +135,13 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      {/* T */}
+      <Testimonios testimonios={contenido.testimonios} />
+      <CasosExito casos={contenido.casos} />
+
+      {/* O + R */}
+      <Oferta />
     </>
   );
 }

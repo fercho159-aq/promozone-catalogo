@@ -1,28 +1,46 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Logo from "@/components/Logo";
-import { categories } from "@/lib/products";
+import type { Promocion } from "@/lib/contenido";
 import { site, whatsappLink } from "@/lib/site";
 
-export default function Header() {
+export type CategoriaMenu = {
+  name: string;
+  slug: string;
+  icon: string;
+  description: string;
+  count: number;
+  imagen: string;
+};
+
+export default function Header({
+  categorias,
+  promociones,
+  mostrarCasos,
+}: {
+  categorias: CategoriaMenu[];
+  promociones: Promocion[];
+  /** el enlace solo aparece si hay casos o testimonios publicados */
+  mostrarCasos: boolean;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [catsOpen, setCatsOpen] = useState(false);
   const catsRef = useRef<HTMLDivElement>(null);
 
-  // al navegar, el clic en el enlace burbujea hasta el contenedor y cierra el menu
+  const promo = promociones[0];
   const closeAll = () => {
     setMenuOpen(false);
     setCatsOpen(false);
   };
 
-  // Escape y click fuera cierran el desplegable de categorias
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setCatsOpen(false);
         setMenuOpen(false);
+        setCatsOpen(false);
       }
     };
     const onClick = (e: MouseEvent) => {
@@ -38,7 +56,7 @@ export default function Header() {
     };
   }, []);
 
-  // bloquea el scroll del body con el menu movil abierto
+  // el panel movil ocupa la pantalla: se bloquea el scroll de atras
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
@@ -48,7 +66,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-navy-800 text-white shadow-lg shadow-navy-950/20">
-      {/* barra superior de contacto, solo desktop */}
+      {/* barra de contacto */}
       <div className="hidden border-b border-white/10 bg-navy-900 lg:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs text-navy-200">
           <p>Personalizamos con tu logo · Envíos a todo {site.areaServed}</p>
@@ -66,7 +84,6 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
         <Logo variant="onDark" size="md" />
 
-        {/* navegacion desktop */}
         <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
           <Link
             href="/"
@@ -76,12 +93,15 @@ export default function Header() {
             Inicio
           </Link>
 
-          <div className="relative" ref={catsRef}>
+          {/* mega menu */}
+          <div ref={catsRef}>
             <button
               onClick={() => setCatsOpen((v) => !v)}
               aria-expanded={catsOpen}
               aria-haspopup="true"
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 transition hover:bg-white/10"
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 transition ${
+                catsOpen ? "bg-white/10" : "hover:bg-white/10"
+              }`}
             >
               Categorías
               <svg
@@ -98,23 +118,98 @@ export default function Header() {
             {catsOpen && (
               <div
                 onClick={closeAll}
-                className="absolute left-0 top-full mt-2 w-72 overflow-hidden rounded-2xl border border-navy-100 bg-white py-2 shadow-2xl"
+                className="absolute inset-x-0 top-full z-50 border-t border-white/10 bg-white shadow-2xl"
               >
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/categoria/${cat.slug}`}
-                    className="flex items-start gap-3 px-4 py-2.5 transition hover:bg-navy-50"
-                  >
-                    <span className="text-xl leading-none" aria-hidden="true">
-                      {cat.icon}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-navy-800">{cat.name}</span>
-                      <span className="block text-xs text-navy-400">{cat.description}</span>
-                    </span>
-                  </Link>
-                ))}
+                <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[1fr_280px]">
+                  <div className="grid grid-cols-4 gap-3">
+                    {categorias.map((cat) => (
+                      <Link
+                        key={cat.slug}
+                        href={`/categoria/${cat.slug}`}
+                        className="group flex items-center gap-3 rounded-xl border border-transparent p-2.5 transition hover:border-navy-100 hover:bg-navy-50"
+                      >
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-navy-50 to-cream-100">
+                          <Image
+                            src={cat.imagen}
+                            alt=""
+                            width={56}
+                            height={56}
+                            className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-navy-800 transition-colors group-hover:text-brand-600">
+                            {cat.name}
+                          </span>
+                          <span className="block text-xs text-navy-400">
+                            {cat.count} productos
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+
+                    <Link
+                      href="/catalogo"
+                      className="col-span-4 mt-1 flex items-center justify-center gap-2 rounded-xl border border-dashed border-navy-200 py-3 text-sm font-semibold text-navy-700 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
+                    >
+                      Ver el catálogo completo del proveedor →
+                    </Link>
+                  </div>
+
+                  {/* promocion destacada */}
+                  {promo ? (
+                    <Link
+                      href={promo.enlace || "/catalogo"}
+                      className="group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-navy-800 p-5 text-white"
+                    >
+                      {promo.imagen && (
+                        <Image
+                          src={promo.imagen}
+                          alt=""
+                          fill
+                          sizes="280px"
+                          className="object-cover opacity-35 transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )}
+                      <div className="relative">
+                        {promo.etiqueta && (
+                          <span className="inline-block rounded-full bg-brand-600 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide">
+                            {promo.etiqueta}
+                          </span>
+                        )}
+                        <p className="mt-2 font-display text-lg font-extrabold leading-tight">
+                          {promo.titulo}
+                        </p>
+                        {promo.texto && (
+                          <p className="mt-1 text-xs text-navy-100">{promo.texto}</p>
+                        )}
+                        <span className="mt-3 inline-block text-sm font-semibold text-brand-onDark">
+                          {promo.cta || "Ver más"} →
+                        </span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div className="flex flex-col justify-center rounded-2xl bg-gradient-to-br from-navy-50 to-cream-100 p-5">
+                      <p className="font-display text-lg font-extrabold text-navy-800">
+                        ¿No encuentras algo?
+                      </p>
+                      <p className="mt-1 text-sm text-navy-500">
+                        Tenemos más de 1,800 artículos. Dinos qué buscas y te
+                        mandamos opciones.
+                      </p>
+                      <a
+                        href={whatsappLink(
+                          `Hola ${site.name}, busco un artículo promocional en particular.`,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 rounded-full bg-whatsapp px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-whatsapp-dark"
+                      >
+                        Escríbenos
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -127,12 +222,15 @@ export default function Header() {
             Catálogo completo
           </Link>
 
-          <Link
-            href="/#por-que-nosotros"
-            className="rounded-lg px-3 py-2 transition hover:bg-white/10"
-          >
-            Por qué nosotros
-          </Link>
+          {mostrarCasos && (
+            <Link
+              href="/#casos"
+              onClick={closeAll}
+              className="rounded-lg px-3 py-2 transition hover:bg-white/10"
+            >
+              Casos de éxito
+            </Link>
+          )}
 
           <a
             href={whatsappLink(`Hola ${site.name}, quiero cotizar artículos promocionales.`)}
@@ -145,7 +243,6 @@ export default function Header() {
           </a>
         </nav>
 
-        {/* boton movil */}
         <button
           className="rounded-lg p-2 transition hover:bg-white/10 md:hidden"
           onClick={() => setMenuOpen((v) => !v)}
@@ -163,63 +260,118 @@ export default function Header() {
         </button>
       </div>
 
-      {/* menu movil */}
+      {/* panel vertical en movil */}
       {menuOpen && (
         <div
           id="menu-movil"
           onClick={closeAll}
-          className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/10 bg-navy-800 px-4 py-4 md:hidden"
+          className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/10 bg-navy-800 pb-6 md:hidden"
         >
-          <Link href="/" className="block rounded-lg px-3 py-2.5 font-medium transition hover:bg-white/10">
-            Inicio
-          </Link>
+          {promo && (
+            <Link
+              href={promo.enlace || "/catalogo"}
+              className="relative block overflow-hidden bg-navy-900 px-4 py-4"
+            >
+              {promo.imagen && (
+                <Image
+                  src={promo.imagen}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  className="object-cover opacity-30"
+                />
+              )}
+              <div className="relative flex items-center gap-3">
+                <span className="rounded-full bg-brand-600 px-2.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide">
+                  {promo.etiqueta || "Promoción"}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold">{promo.titulo}</span>
+                  {promo.vigencia && (
+                    <span className="block text-[0.7rem] text-navy-200">
+                      {promo.vigencia}
+                    </span>
+                  )}
+                </span>
+                <span className="text-brand-onDark" aria-hidden="true">
+                  →
+                </span>
+              </div>
+            </Link>
+          )}
 
-          <p className="mt-3 px-3 text-xs font-semibold uppercase tracking-wider text-navy-300">
-            Categorías
-          </p>
-          <div className="mt-1 grid grid-cols-2 gap-1">
-            {categories.map((cat) => (
+          <nav className="px-4 pt-4">
+            <Link
+              href="/"
+              className="block rounded-lg px-3 py-3 font-medium transition hover:bg-white/10"
+            >
+              Inicio
+            </Link>
+
+            <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-navy-300">
+              Categorías
+            </p>
+            <ul className="mt-2 space-y-1">
+              {categorias.map((cat) => (
+                <li key={cat.slug}>
+                  <Link
+                    href={`/categoria/${cat.slug}`}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-white/10"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
+                      <Image
+                        src={cat.imagen}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="h-8 w-8 object-contain"
+                      />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold">{cat.name}</span>
+                      <span className="block truncate text-xs text-navy-300">
+                        {cat.count} productos
+                      </span>
+                    </span>
+                    <span className="text-navy-400" aria-hidden="true">
+                      ›
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href="/catalogo"
+              className="mt-4 block rounded-lg px-3 py-3 font-medium transition hover:bg-white/10"
+            >
+              Catálogo completo
+            </Link>
+            {mostrarCasos && (
               <Link
-                key={cat.slug}
-                href={`/categoria/${cat.slug}`}
-                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition hover:bg-white/10"
+                href="/#casos"
+                className="block rounded-lg px-3 py-3 font-medium transition hover:bg-white/10"
               >
-                <span aria-hidden="true">{cat.icon}</span>
-                {cat.name}
+                Casos de éxito
               </Link>
-            ))}
-          </div>
+            )}
 
-          <Link
-            href="/catalogo"
-            className="mt-3 block rounded-lg px-3 py-2.5 font-medium transition hover:bg-white/10"
-          >
-            Catálogo completo
-          </Link>
-
-          <Link
-            href="/#por-que-nosotros"
-            className="block rounded-lg px-3 py-2.5 font-medium transition hover:bg-white/10"
-          >
-            Por qué nosotros
-          </Link>
-
-          <a
-            href={whatsappLink(`Hola ${site.name}, quiero cotizar artículos promocionales.`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 flex items-center justify-center gap-2 rounded-full bg-whatsapp px-4 py-3 font-semibold text-white transition hover:bg-whatsapp-dark"
-          >
-            <WhatsAppIcon />
-            Cotizar por WhatsApp
-          </a>
-
-          <a
-            href={`tel:${site.phoneE164}`}
-            className="mt-2 block rounded-full border border-white/20 px-4 py-3 text-center font-medium transition hover:bg-white/10"
-          >
-            {site.phoneDisplay}
-          </a>
+            <a
+              href={whatsappLink(`Hola ${site.name}, quiero cotizar artículos promocionales.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-whatsapp px-4 py-3 font-semibold text-white transition hover:bg-whatsapp-dark"
+            >
+              <WhatsAppIcon />
+              Cotizar por WhatsApp
+            </a>
+            <a
+              href={`tel:${site.phoneE164}`}
+              className="mt-2 block rounded-full border border-white/20 px-4 py-3 text-center font-medium transition hover:bg-white/10"
+            >
+              {site.phoneDisplay}
+            </a>
+          </nav>
         </div>
       )}
     </header>
