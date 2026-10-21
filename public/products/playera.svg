@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 350" fill="none">
+  <path d="M90 30 L60 60 L20 50 L40 120 L70 110 L70 320 L230 320 L230 110 L260 120 L280 50 L240 60 L210 30 Q190 60 150 60 Q110 60 90 30Z" fill="#ccc" stroke="#aaa" stroke-width="2"/>
+  <path d="M90 30 Q110 60 150 60 Q190 60 210 30" fill="none" stroke="#aaa" stroke-width="2"/>
+  <rect x="110" y="120" width="80" height="80" rx="5" fill="white" opacity="0.5"/>
+  <text x="150" y="165" text-anchor="middle" font-size="12" fill="#999">Tu Logo</text>
+</svg>
