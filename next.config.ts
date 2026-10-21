@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
       },
+      {
+        // imagenes del catalogo del proveedor (ForPromotional)
+        protocol: "https",
+        hostname: "assets.4promotional.net",
+      },
     ],
     formats: ["image/avif", "image/webp"],
     // el hero usa 80; Next exige declarar cada calidad empleada

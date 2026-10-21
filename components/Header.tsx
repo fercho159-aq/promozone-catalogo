@@ -120,6 +120,14 @@ export default function Header() {
           </div>
 
           <Link
+            href="/catalogo"
+            onClick={closeAll}
+            className="rounded-lg px-3 py-2 transition hover:bg-white/10"
+          >
+            Catálogo completo
+          </Link>
+
+          <Link
             href="/#por-que-nosotros"
             className="rounded-lg px-3 py-2 transition hover:bg-white/10"
           >
@@ -183,8 +191,15 @@ export default function Header() {
           </div>
 
           <Link
-            href="/#por-que-nosotros"
+            href="/catalogo"
             className="mt-3 block rounded-lg px-3 py-2.5 font-medium transition hover:bg-white/10"
+          >
+            Catálogo completo
+          </Link>
+
+          <Link
+            href="/#por-que-nosotros"
+            className="block rounded-lg px-3 py-2.5 font-medium transition hover:bg-white/10"
           >
             Por qué nosotros
           </Link>

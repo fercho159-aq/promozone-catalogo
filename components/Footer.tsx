@@ -66,8 +66,13 @@ export default function Footer() {
               </li>
               <li className="text-navy-300">Envíos a todo {site.areaServed}</li>
               <li className="pt-2">
+                <Link href="/catalogo" className="transition hover:text-white">
+                  Catálogo completo
+                </Link>
+              </li>
+              <li>
                 <Link href="/#categorias" className="transition hover:text-white">
-                  Ver catálogo completo
+                  Productos destacados
                 </Link>
               </li>
             </ul>

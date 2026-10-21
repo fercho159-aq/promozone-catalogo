@@ -34,6 +34,20 @@ export const site = {
   },
 } as const;
 
+/**
+ * Margen aplicado al precio de lista del proveedor antes de mostrarlo.
+ *
+ * La API de ForPromotional devuelve el precio al que TU compras. Publicarlo
+ * tal cual dejaria tu costo a la vista de cualquiera. 1.45 es un valor de
+ * arranque: ajustalo con CATALOGO_MARGEN o cambiando el numero de abajo.
+ */
+export const margenCatalogo = Number(process.env.CATALOGO_MARGEN) || 1.45;
+
+/** Precio de lista del proveedor -> precio publico, redondeado a peso */
+export function precioPublico(precioProveedor: number): number {
+  return Math.ceil(precioProveedor * margenCatalogo);
+}
+
 export function whatsappLink(message?: string): string {
   const base = `https://wa.me/${site.whatsapp}`;
   if (!message) return base;
@@ -44,5 +58,6 @@ export function whatsappLink(message?: string): string {
 export const mainNav = [
   { href: "/", label: "Inicio" },
   { href: "/#categorias", label: "Categorías" },
+  { href: "/catalogo", label: "Catálogo completo" },
   { href: "/#por-que-nosotros", label: "Por qué nosotros" },
 ] as const;
