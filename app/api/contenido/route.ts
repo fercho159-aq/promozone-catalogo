@@ -20,7 +20,12 @@ export async function PUT(req: NextRequest) {
   if (!c || typeof c !== "object") {
     return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
   }
-  if (!Array.isArray(c.promociones) || !Array.isArray(c.testimonios) || !Array.isArray(c.casos)) {
+  if (
+    !Array.isArray(c.promociones) ||
+    !Array.isArray(c.testimonios) ||
+    !Array.isArray(c.casos) ||
+    !Array.isArray(c.galeria)
+  ) {
     return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
   }
 

@@ -46,8 +46,18 @@ export type CasoExito = {
   imagen: string;
 };
 
+export type FotoGaleria = {
+  id: string;
+  url: string;
+  /** texto alternativo y pie de foto; opcional */
+  titulo: string;
+  activa: boolean;
+};
+
 export type Contenido = {
   promociones: Promocion[];
+  /** Galeria de "Textiles y proyectos especiales": solo imagenes */
+  galeria: FotoGaleria[];
   testimonios: Testimonio[];
   casos: CasoExito[];
   /** ventana emergente de escritorio con las promociones del mes */
@@ -71,6 +81,7 @@ export type Contenido = {
 
 export const CONTENIDO_VACIO: Contenido = {
   promociones: [],
+  galeria: [],
   testimonios: [],
   casos: [],
   modal: {
@@ -92,6 +103,7 @@ const KEY = "data/contenido.json";
 function normalizar(c: Partial<Contenido> | null): Contenido {
   return {
     promociones: Array.isArray(c?.promociones) ? c.promociones : [],
+    galeria: Array.isArray(c?.galeria) ? c.galeria : [],
     testimonios: Array.isArray(c?.testimonios) ? c.testimonios : [],
     casos: Array.isArray(c?.casos) ? c.casos : [],
     modal: {
@@ -124,6 +136,7 @@ export const getContenidoPublico = cache(async () => {
   const c = await getContenido();
   return {
     promociones: c.promociones.filter((p) => p.activa),
+    galeria: c.galeria.filter((f) => f.activa && f.url),
     testimonios: c.testimonios.filter((t) => t.activo),
     casos: c.casos.filter((k) => k.activo),
     modal: c.modal,

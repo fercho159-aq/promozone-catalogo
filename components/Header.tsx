@@ -82,10 +82,10 @@ export default function Header({
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 md:grid md:grid-cols-[1fr_auto_1fr]">
         <Logo variant="onDark" size="md" />
 
-        <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
+        <nav className="hidden items-center justify-center gap-1 text-sm font-medium md:flex">
           <Link
             href="/"
             onClick={closeAll}
@@ -218,11 +218,11 @@ export default function Header({
           </div>
 
           <Link
-            href="/catalogo"
+            href="/textiles-y-proyectos-especiales"
             onClick={closeAll}
             className="rounded-lg px-3 py-2 transition hover:bg-white/10"
           >
-            Catálogo completo
+            Textiles y proyectos especiales
           </Link>
 
           {mostrarCasos && (
@@ -235,16 +235,17 @@ export default function Header({
             </Link>
           )}
 
-          <a
-            href={whatsappLink(`Hola ${site.name}, quiero cotizar artículos promocionales.`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-2 flex items-center gap-2 rounded-full bg-whatsapp px-4 py-2 text-sm font-semibold text-white transition hover:bg-whatsapp-dark"
-          >
-            <WhatsAppIcon />
-            Cotizar
-          </a>
         </nav>
+
+        <a
+          href={whatsappLink(`Hola ${site.name}, quiero cotizar artículos promocionales.`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden items-center gap-2 rounded-full bg-whatsapp px-4 py-2 text-sm font-semibold text-white transition hover:bg-whatsapp-dark md:flex md:justify-self-end"
+        >
+          <WhatsAppIcon />
+          Cotizar
+        </a>
 
         <button
           className="rounded-lg p-2 transition hover:bg-white/10 md:hidden"
@@ -348,9 +349,16 @@ export default function Header({
 
             <Link
               href="/catalogo"
+              className="mt-2 block rounded-lg px-3 py-2.5 text-sm text-navy-200 transition hover:bg-white/10"
+            >
+              Ver todo el catálogo →
+            </Link>
+
+            <Link
+              href="/textiles-y-proyectos-especiales"
               className="mt-4 block rounded-lg px-3 py-3 font-medium transition hover:bg-white/10"
             >
-              Catálogo completo
+              Textiles y proyectos especiales
             </Link>
             {mostrarCasos && (
               <Link

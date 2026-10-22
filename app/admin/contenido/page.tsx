@@ -6,11 +6,12 @@ import {
   nuevoId,
   type CasoExito,
   type Contenido,
+  type FotoGaleria,
   type Promocion,
   type Testimonio,
 } from "@/lib/contenido";
 
-type Pestana = "promociones" | "testimonios" | "casos";
+type Pestana = "promociones" | "galeria" | "testimonios" | "casos";
 
 const campo =
   "w-full rounded-lg border border-navy-200 px-3 py-2 text-sm text-navy-900 placeholder:text-navy-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200";
@@ -66,6 +67,7 @@ export default function ContenidoAdminPage() {
 
   const pestanas: { id: Pestana; label: string; n: number }[] = [
     { id: "promociones", label: "Promociones", n: c.promociones.length },
+    { id: "galeria", label: "Textiles y proyectos", n: c.galeria.length },
     { id: "testimonios", label: "Reseñas", n: c.testimonios.length },
     { id: "casos", label: "Casos de éxito", n: c.casos.length },
   ];
@@ -232,6 +234,13 @@ export default function ContenidoAdminPage() {
         <Promociones
           items={c.promociones}
           onChange={(promociones) => setC({ ...c, promociones })}
+          onError={(m) => notificar(false, m)}
+        />
+      )}
+      {pestana === "galeria" && (
+        <GaleriaAdmin
+          items={c.galeria}
+          onChange={(galeria) => setC({ ...c, galeria })}
           onError={(m) => notificar(false, m)}
         />
       )}
@@ -497,6 +506,163 @@ function Promociones({
             </div>
           </Tarjeta>
         ))
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------- galeria --------------------------------- */
+
+function GaleriaAdmin({
+  items,
+  onChange,
+  onError,
+}: {
+  items: FotoGaleria[];
+  onChange: (f: FotoGaleria[]) => void;
+  onError: (m: string) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [subiendo, setSubiendo] = useState(0);
+
+  async function subir(files: FileList) {
+    setSubiendo(files.length);
+    const nuevas: FotoGaleria[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("slug", "proyecto");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "No se pudo subir " + file.name);
+        nuevas.push({ id: nuevoId("foto"), url: data.url, titulo: "", activa: true });
+      } catch (e) {
+        onError(e instanceof Error ? e.message : "No se pudo subir " + file.name);
+      }
+      setSubiendo((n) => n - 1);
+    }
+    if (nuevas.length) onChange([...nuevas, ...items]);
+    setSubiendo(0);
+  }
+
+  function mover(i: number, delta: number) {
+    const j = i + delta;
+    if (j < 0 || j >= items.length) return;
+    const copia = [...items];
+    const tmp = copia[i];
+    copia[i] = copia[j];
+    copia[j] = tmp;
+    onChange(copia);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-white p-5 shadow-sm">
+        <h2 className="font-display font-bold text-navy-800">
+          Galeria de textiles y proyectos especiales
+        </h2>
+        <p className="mt-1 text-xs text-navy-400">
+          Solo fotos. Es lo que se ve en el enlace del menu. El orden de aqui es
+          el orden en el que aparecen en el sitio.
+        </p>
+        <input
+          ref={ref}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.length) subir(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <button
+          onClick={() => ref.current?.click()}
+          disabled={subiendo > 0}
+          className="mt-4 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
+        >
+          {subiendo > 0 ? "Subiendo " + subiendo + "..." : "+ Subir fotos"}
+        </button>
+        <span className="ml-3 text-xs text-navy-400">
+          Puedes seleccionar varias a la vez. JPG, PNG, WebP o AVIF, maximo 5 MB
+          cada una.
+        </span>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="rounded-xl bg-white p-8 text-center text-sm text-navy-400 shadow-sm">
+          Sin fotos todavia. La pagina ya existe y esta en el menu, pero se ve
+          vacia hasta que subas la primera.
+        </p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((f, i) => (
+            <div
+              key={f.id}
+              className={`overflow-hidden rounded-xl bg-white shadow-sm ${f.activa ? "" : "opacity-55"}`}
+            >
+              <div className="flex aspect-video items-center justify-center bg-navy-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={f.url} alt="" className="h-full w-full object-cover" />
+              </div>
+              <div className="space-y-2 p-3">
+                <input
+                  value={f.titulo}
+                  onChange={(e) =>
+                    onChange(
+                      items.map((x, j) => (j === i ? { ...x, titulo: e.target.value } : x)),
+                    )
+                  }
+                  placeholder="Pie de foto (opcional)"
+                  className={campo}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => mover(i, -1)}
+                      disabled={i === 0}
+                      aria-label="Mover antes"
+                      className="rounded-lg border border-navy-200 px-2 py-1 text-xs text-navy-600 disabled:opacity-30"
+                    >
+                      &larr;
+                    </button>
+                    <button
+                      onClick={() => mover(i, 1)}
+                      disabled={i === items.length - 1}
+                      aria-label="Mover despues"
+                      className="rounded-lg border border-navy-200 px-2 py-1 text-xs text-navy-600 disabled:opacity-30"
+                    >
+                      &rarr;
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        onChange(
+                          items.map((x, j) => (j === i ? { ...x, activa: !x.activa } : x)),
+                        )
+                      }
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                        f.activa
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-navy-100 text-navy-500"
+                      }`}
+                    >
+                      {f.activa ? "Visible" : "Oculta"}
+                    </button>
+                    <button
+                      onClick={() => onChange(items.filter((_, j) => j !== i))}
+                      className="text-xs font-medium text-brand-600 hover:underline"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
