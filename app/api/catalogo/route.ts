@@ -43,6 +43,13 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
   }
 
+  if (typeof c.margen !== "number" || !(c.margen >= 1 && c.margen <= 10)) {
+    return NextResponse.json(
+      { error: "El margen debe estar entre 1 y 10" },
+      { status: 400 },
+    );
+  }
+
   for (const m of c.manuales) {
     if (!m?.id || !m?.nombre?.trim()) {
       return NextResponse.json(

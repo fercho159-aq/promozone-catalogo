@@ -85,10 +85,14 @@ function slug(s: string): string {
 export default function CatalogoAdminPage() {
   const [filas, setFilas] = useState<Fila[]>([]);
   const [editable, setEditable] = useState<CatalogoEditable>({
+    margen: 1.45,
     manuales: [],
     ajustes: {},
   });
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  // margen con el que venian calculados los precios de la tabla;
+  // sirve para deducir el costo y previsualizar sin recargar
+  const [margenCargado, setMargenCargado] = useState(1.45);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [sucio, setSucio] = useState(false);
@@ -113,7 +117,8 @@ export default function CatalogoAdminPage() {
         const d = await r.json();
         if (!vivo) return;
         setFilas(d.articulos ?? []);
-        setEditable(d.editable ?? { manuales: [], ajustes: {} });
+        setEditable(d.editable ?? { margen: 1.45, manuales: [], ajustes: {} });
+        setMargenCargado(d.editable?.margen ?? 1.45);
         setCategorias(d.categorias ?? []);
       } catch {
         if (vivo) notificar(false, "No se pudo cargar el catálogo");
@@ -367,6 +372,19 @@ export default function CatalogoAdminPage() {
           </button>
         </div>
       </div>
+
+
+      {/* margen global */}
+      <TarjetaMargen
+        margen={editable.margen}
+        margenCargado={margenCargado}
+        ejemplo={filas.find((f) => f.origen === "api" && f.precioAjustado == null)}
+        onChange={(margen) => {
+          setEditable((prev) => ({ ...prev, margen }));
+          setSucio(true);
+          // los precios mostrados se recalculan al publicar y recargar
+        }}
+      />
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
         <Stat label="Total" value={stats.total.toLocaleString("es-MX")} />
@@ -623,6 +641,124 @@ export default function CatalogoAdminPage() {
           {aviso.texto}
         </div>
       )}
+    </div>
+  );
+}
+
+
+/* ------------------------------ margen global ---------------------------- */
+
+/**
+ * Un solo control cambia el precio de TODOS los articulos del proveedor.
+ *
+ * Se piden las dos cifras a la vez porque significan cosas distintas y se
+ * confunden seguido: "45% sobre el costo" deja 31% de utilidad sobre la venta.
+ * Los articulos con precio fijo no se ven afectados.
+ */
+function TarjetaMargen({
+  margen,
+  margenCargado,
+  ejemplo,
+  onChange,
+}: {
+  margen: number;
+  /** margen con el que se calcularon los precios de la tabla */
+  margenCargado: number;
+  ejemplo?: Fila;
+  onChange: (m: number) => void;
+}) {
+  const sobreCosto = Math.round((margen - 1) * 100);
+  const utilidad = Math.round((1 - 1 / margen) * 100);
+
+  // el costo se deduce con el margen con el que se cargo la tabla, no con
+  // el que se esta editando: si no, el ejemplo nunca cambiaria de precio
+  const costo = ejemplo ? ejemplo.precioBase / margenCargado : null;
+  const precioNuevo = costo ? Math.ceil(costo * margen) : null;
+
+  const desdeUtilidad = (pct: number) => {
+    const p = Math.min(90, Math.max(0, pct));
+    onChange(Number((1 / (1 - p / 100)).toFixed(4)));
+  };
+  const desdeCosto = (pct: number) => {
+    const p = Math.min(900, Math.max(0, pct));
+    onChange(Number((1 + p / 100).toFixed(4)));
+  };
+
+  return (
+    <div className="mb-6 rounded-xl bg-white p-5 shadow-sm">
+      <h2 className="font-display font-bold text-navy-800">
+        Margen de todo el catálogo
+      </h2>
+      <p className="mt-1 text-xs text-navy-400">
+        Cambia de golpe el precio de los {" "}
+        <strong>artículos del proveedor</strong>. Los que tengan precio fijo
+        puesto a mano no se tocan.
+      </p>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div>
+          <span className={etiqueta}>Utilidad sobre la venta</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              max={90}
+              value={utilidad}
+              onChange={(e) => desdeUtilidad(Number(e.target.value))}
+              className={campo}
+            />
+            <span className="text-navy-400">%</span>
+          </div>
+          <p className="mt-1 text-xs text-navy-400">
+            De cada $100 vendidos, te quedan ${utilidad}.
+          </p>
+        </div>
+
+        <div>
+          <span className={etiqueta}>Aumento sobre el costo</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              max={900}
+              value={sobreCosto}
+              onChange={(e) => desdeCosto(Number(e.target.value))}
+              className={campo}
+            />
+            <span className="text-navy-400">%</span>
+          </div>
+          <p className="mt-1 text-xs text-navy-400">
+            El costo se multiplica por {margen.toFixed(2)}.
+          </p>
+        </div>
+
+        <div className="rounded-lg bg-navy-50 p-3">
+          <span className={etiqueta}>Ejemplo</span>
+          {ejemplo && costo ? (
+            <p className="text-sm leading-relaxed text-navy-700">
+              <span className="font-medium">{ejemplo.nombre}</span>
+              <br />
+              Costo ${Math.round(costo).toLocaleString("es-MX")} &rarr;{" "}
+              <span className="font-display font-bold text-brand-600">
+                ${precioNuevo?.toLocaleString("es-MX")}
+              </span>
+              {precioNuevo !== ejemplo.precioBase && (
+                <span className="block text-xs text-navy-400">
+                  antes ${ejemplo.precioBase.toLocaleString("es-MX")}
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="text-sm text-navy-400">Sin artículos del proveedor</p>
+          )}
+        </div>
+      </div>
+
+      <p className="mt-3 rounded-lg bg-cream-100 p-3 text-xs text-navy-600">
+        Ojo con la diferencia: <strong>50% sobre el costo</strong> deja 33% de
+        utilidad. Para quedarte con <strong>50% de utilidad</strong>, el precio
+        tiene que ser el doble del costo.
+      </p>
     </div>
   );
 }

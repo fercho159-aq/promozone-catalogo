@@ -6,7 +6,7 @@ import {
   type ArticuloProveedor,
   type VarianteColor,
 } from "@/lib/proveedor";
-import { precioPublico } from "@/lib/site";
+import { margenCatalogo } from "@/lib/site";
 
 /**
  * Catalogo unificado: un solo listado para el visitante, armado con tres
@@ -56,12 +56,22 @@ export type AjusteProveedor = {
 };
 
 export type CatalogoEditable = {
+  /**
+   * Factor por el que se multiplica el precio de lista del proveedor.
+   * 1.45 = el costo mas 45%, que deja 31% de utilidad sobre la venta.
+   * Los precios fijos por articulo mandan sobre este factor.
+   */
+  margen: number;
   manuales: ArticuloManual[];
   /** indexado por el codigo del proveedor, p. ej. "T 137" */
   ajustes: Record<string, AjusteProveedor>;
 };
 
-export const CATALOGO_VACIO: CatalogoEditable = { manuales: [], ajustes: {} };
+export const CATALOGO_VACIO: CatalogoEditable = {
+  margen: margenCatalogo,
+  manuales: [],
+  ajustes: {},
+};
 
 /** Lo que consumen las paginas: el origen ya no importa */
 export type ArticuloCatalogo = {
@@ -90,7 +100,10 @@ export type ArticuloCatalogo = {
 };
 
 function normalizar(c: Partial<CatalogoEditable> | null): CatalogoEditable {
+  const margen = Number(c?.margen);
   return {
+    // se acota para que un dedazo no deje el catalogo en cero o por las nubes
+    margen: Number.isFinite(margen) && margen >= 1 && margen <= 10 ? margen : margenCatalogo,
     manuales: Array.isArray(c?.manuales) ? c.manuales : [],
     ajustes:
       c?.ajustes && typeof c.ajustes === "object" && !Array.isArray(c.ajustes)
@@ -108,9 +121,15 @@ export async function saveCatalogoEditable(c: CatalogoEditable): Promise<void> {
   await setBlob(KEY, normalizar(c));
 }
 
+/** Precio de lista del proveedor -> precio publico */
+function conMargen(precioProveedor: number, margen: number): number {
+  return Math.ceil(precioProveedor * margen);
+}
+
 function desdeProveedor(
   a: ArticuloProveedor,
   ajuste: AjusteProveedor | undefined,
+  margen: number,
 ): ArticuloCatalogo {
   return {
     id: a.id,
@@ -128,7 +147,7 @@ function desdeProveedor(
     precio:
       typeof ajuste?.precio === "number" && ajuste.precio > 0
         ? ajuste.precio
-        : precioPublico(a.precioProveedor),
+        : conMargen(a.precioProveedor, margen),
     inventario: a.inventario,
     nuevo: a.nuevo,
     promocion: a.promocion,
@@ -175,7 +194,7 @@ export const getCatalogoUnificado = cache(async (): Promise<ArticuloCatalogo[]> 
 
   const deApi = api
     .filter((a) => !editable.ajustes[a.codigo]?.oculto)
-    .map((a) => desdeProveedor(a, editable.ajustes[a.codigo]));
+    .map((a) => desdeProveedor(a, editable.ajustes[a.codigo], editable.margen));
 
   const propios = editable.manuales
     .filter((m) => m.activo)
@@ -282,9 +301,9 @@ export async function getCatalogoAdmin() {
   const deApi = api.map((a) => {
     const ajuste = editable.ajustes[a.codigo];
     return {
-      ...desdeProveedor(a, ajuste),
+      ...desdeProveedor(a, ajuste, editable.margen),
       oculto: Boolean(ajuste?.oculto),
-      precioBase: precioPublico(a.precioProveedor),
+      precioBase: conMargen(a.precioProveedor, editable.margen),
       precioAjustado: typeof ajuste?.precio === "number" ? ajuste.precio : null,
     };
   });
