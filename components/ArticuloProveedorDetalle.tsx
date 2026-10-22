@@ -5,12 +5,6 @@ import { useState } from "react";
 import type { ArticuloProveedor } from "@/lib/proveedor";
 import { site } from "@/lib/site";
 
-function descuento(qty: number): number {
-  if (qty >= 16) return 10;
-  if (qty >= 6) return 5;
-  return 0;
-}
-
 export default function ArticuloProveedorDetalle({
   articulo,
   precio,
@@ -24,9 +18,7 @@ export default function ArticuloProveedorDetalle({
   const [cantidad, setCantidad] = useState(10);
   const [enviado, setEnviado] = useState(false);
 
-  const desc = descuento(cantidad);
-  const unitario = Math.ceil(precio * (1 - desc / 100));
-  const total = unitario * cantidad;
+  const total = precio * cantidad;
 
   function cotizar() {
     const mensaje =
@@ -35,8 +27,7 @@ export default function ArticuloProveedorDetalle({
       `🔖 Código: ${articulo.codigo}\n` +
       (color ? `🎨 Color: ${color}\n` : "") +
       `📊 Cantidad: ${cantidad} piezas\n` +
-      `💵 Estimado: $${total.toLocaleString("es-MX")} MXN` +
-      (desc > 0 ? ` (incluye ${desc}% por volumen)` : "");
+      `💵 Estimado: $${total.toLocaleString("es-MX")} MXN`;
 
     fetch("/api/quotes", {
       method: "POST",
@@ -50,7 +41,7 @@ export default function ArticuloProveedorDetalle({
         productColor: color,
         quantity: cantidad,
         unitPrice: precio,
-        discount: desc,
+        discount: 0,
         total,
         date: new Date().toLocaleDateString("es-MX"),
       }),
@@ -213,9 +204,6 @@ export default function ArticuloProveedorDetalle({
               }
               className="w-24 rounded-lg border border-navy-200 px-3 py-2 text-center font-semibold text-navy-900"
             />
-            <span className="text-xs text-navy-500">
-              {desc > 0 ? `Incluye ${desc}% por volumen` : "Desde 6 piezas hay descuento"}
-            </span>
           </div>
 
           <div className="mt-4 space-y-1 text-sm">
@@ -223,11 +211,6 @@ export default function ArticuloProveedorDetalle({
               <span className="text-navy-600">Precio unitario:</span>
               <span className="font-medium text-navy-900">
                 ${precio.toLocaleString("es-MX")}
-                {desc > 0 && (
-                  <span className="ml-1 text-emerald-600">
-                    → ${unitario.toLocaleString("es-MX")}
-                  </span>
-                )}
               </span>
             </div>
             <div className="flex justify-between border-t border-navy-200 pt-2 font-display text-lg font-bold">

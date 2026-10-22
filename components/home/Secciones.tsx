@@ -145,7 +145,6 @@ export function ComoFunciona() {
 const incluye = [
   "Catálogo de más de 1,800 artículos con el inventario del proveedor",
   "Previsualización de tu logo sobre el producto",
-  "Descuentos por volumen aplicados solos en el cotizador",
   "Cotización en PDF descargable desde la página",
   "Envío de la cotización por WhatsApp con un clic",
 ];

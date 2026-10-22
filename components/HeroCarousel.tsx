@@ -77,7 +77,7 @@ export default function HeroCarousel() {
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
               <a
-                href="#categorias"
+                href="#catalogo"
                 className="rounded-full bg-white px-8 py-3.5 font-display text-lg font-bold text-navy-800 shadow-lg transition hover:bg-cream-100"
               >
                 Ver catálogo

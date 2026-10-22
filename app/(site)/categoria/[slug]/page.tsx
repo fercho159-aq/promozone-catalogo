@@ -128,10 +128,10 @@ export default async function CategoryPage({
             Aún no hay productos publicados en esta categoría.
           </p>
           <Link
-            href="/#categorias"
+            href="/catalogo"
             className="mt-4 inline-block rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
           >
-            Ver otras categorías
+            Ver el catálogo completo
           </Link>
         </div>
       ) : (

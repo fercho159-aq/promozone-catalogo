@@ -16,12 +16,15 @@ export const site = {
   lang: "es-MX",
   country: "MX",
 
-  /** Numero en formato internacional sin signos, para los enlaces wa.me */
+  /** WhatsApp: numero internacional sin signos, para los enlaces wa.me */
   whatsapp: "5215550746699",
-  /** Mismo numero en formato legible */
-  phoneDisplay: "+52 55 5074 6699",
-  /** Formato E.164 para tel: y datos estructurados */
-  phoneE164: "+525550746699",
+  /** El mismo numero de WhatsApp, en formato legible */
+  whatsappDisplay: "+52 55 5074 6699",
+
+  /** Linea de llamadas, distinta a la de WhatsApp */
+  phoneDisplay: "+52 56 3186 3225",
+  /** Formato E.164 para los enlaces tel: y los datos estructurados */
+  phoneE164: "+525631863225",
   /** Vacio a proposito: no se ha confirmado una direccion de correo.
    *  Al llenarlo aparece en header, footer y datos estructurados. */
   email: "",
@@ -62,7 +65,6 @@ export function whatsappLink(message?: string): string {
 /** Enlaces de navegacion principales, compartidos por header y footer */
 export const mainNav = [
   { href: "/", label: "Inicio" },
-  { href: "/#categorias", label: "Categorías" },
   { href: "/catalogo", label: "Catálogo completo" },
   { href: "/#como-funciona", label: "Cómo funciona" },
 ] as const;

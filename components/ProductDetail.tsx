@@ -5,18 +5,6 @@ import type { CatalogProduct } from "@/lib/catalog";
 import { generateQuotePDF } from "@/lib/generatePDF";
 import { site } from "@/lib/site";
 
-function getDiscount(qty: number): number {
-  if (qty >= 16) return 10;
-  if (qty >= 6) return 5;
-  return 0;
-}
-
-function getTierLabel(qty: number): string {
-  if (qty >= 16) return "16-50 piezas (-10%)";
-  if (qty >= 6) return "6-15 piezas (-5%)";
-  return "1-5 piezas (precio base)";
-}
-
 // Posicion del logo sobre la foto, por categoria
 const logoPositions: Record<string, { top: string; left: string; width: string; height: string }> = {
   termos:    { top: "35%", left: "30%", width: "40%", height: "25%" },
@@ -41,8 +29,7 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const discount = getDiscount(quantity);
-  const unitPrice = product.price * (1 - discount / 100);
+  const unitPrice = product.price;
   const total = unitPrice * quantity;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +56,6 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
       `🎨 Color: ${selectedColor.name}\n` +
       `📊 Cantidad: ${quantity} piezas\n` +
       `💰 Precio unitario: $${unitPrice.toFixed(2)}\n` +
-      `${discount > 0 ? `🏷️ Descuento: ${discount}%\n` : ""}` +
       `💵 *Total estimado: $${total.toFixed(2)} MXN*\n` +
       `${logoUrl ? "\n📎 Adjunto mi logo por separado" : ""}`
     );
@@ -86,7 +72,7 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
         productColor: selectedColor.name,
         quantity,
         unitPrice: product.price,
-        discount,
+        discount: 0,
         total,
         date: new Date().toLocaleDateString("es-MX"),
       }),
@@ -105,7 +91,7 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
       productColor: selectedColor.name,
       quantity,
       unitPrice: product.price,
-      discount,
+      discount: 0,
       total,
       date: new Date().toLocaleDateString("es-MX"),
     });
@@ -272,26 +258,6 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
           <div className="mt-6 rounded-xl bg-gradient-to-br from-navy-50 to-cream-100 p-5">
             <h2 className="mb-3 text-sm font-semibold text-navy-700">Cantidad y precio</h2>
 
-            <div className="mb-4 flex flex-wrap gap-2">
-              {[
-                { label: "1-5 pzas", desc: "Precio base", min: 1 },
-                { label: "6-15 pzas", desc: "-5%", min: 6 },
-                { label: "16-50 pzas", desc: "-10%", min: 16 },
-              ].map((tier) => (
-                <button
-                  key={tier.min}
-                  onClick={() => setQuantity(tier.min)}
-                  className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
-                    getDiscount(quantity) === getDiscount(tier.min)
-                      ? "border-navy-800 bg-navy-800 text-white"
-                      : "border-navy-200 bg-white text-navy-700 hover:border-brand-400"
-                  }`}
-                >
-                  <span className="block">{tier.label}</span>
-                  <span className="block text-[10px] opacity-80">{tier.desc}</span>
-                </button>
-              ))}
-            </div>
 
             <div className="flex items-center gap-3">
               <label htmlFor="cantidad" className="text-sm text-navy-600">
@@ -306,7 +272,6 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
                 onChange={(e) => setQuantity(Math.max(1, Math.min(50, Number(e.target.value))))}
                 className="w-20 rounded-lg border border-navy-200 px-3 py-2 text-center font-semibold text-navy-900"
               />
-              <span className="text-xs text-navy-500">{getTierLabel(quantity)}</span>
             </div>
 
             <div className="mt-4 space-y-1">
@@ -314,17 +279,8 @@ export default function ProductDetail({ product }: { product: CatalogProduct }) 
                 <span className="text-navy-600">Precio unitario:</span>
                 <span className="font-medium text-navy-900">
                   ${product.price.toFixed(2)}
-                  {discount > 0 && (
-                    <span className="ml-1 text-emerald-600">→ ${unitPrice.toFixed(2)}</span>
-                  )}
                 </span>
               </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-emerald-600">Descuento:</span>
-                  <span className="font-medium text-emerald-600">-{discount}%</span>
-                </div>
-              )}
               <div className="flex justify-between border-t border-navy-200 pt-2 font-display text-lg font-bold">
                 <span className="text-navy-800">Total:</span>
                 <span className="text-brand-600">${total.toFixed(2)} MXN</span>

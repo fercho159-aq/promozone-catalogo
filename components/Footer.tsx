@@ -71,11 +71,7 @@ export default function Footer() {
                   Catálogo completo
                 </Link>
               </li>
-              <li>
-                <Link href="/#categorias" className="transition hover:text-white">
-                  Productos destacados
-                </Link>
-              </li>
+
             </ul>
           </div>
         </div>
