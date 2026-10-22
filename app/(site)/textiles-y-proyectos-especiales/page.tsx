@@ -58,9 +58,14 @@ export default async function ProyectosPage() {
         <h1 className="font-display text-3xl font-extrabold md:text-4xl">
           Textiles y <span className="text-brand-onDark">proyectos especiales</span>
         </h1>
+        {/*
+          El texto no afirma autoria de las fotos: mientras sean imagenes de
+          muestra, decir "trabajos que hicimos" seria falso. Sirve igual
+          cuando se sustituyan por proyectos reales.
+        */}
         <p className="mt-2 max-w-2xl text-navy-200">
-          Trabajos que hemos personalizado. Si traes una idea fuera de catálogo,
-          mándanos la referencia y la cotizamos.
+          Textiles, uniformes y desarrollos a la medida. Si traes una idea
+          fuera de catálogo, mándanos la referencia y la cotizamos.
         </p>
         <a
           href={whatsappLink(
