@@ -33,10 +33,32 @@ export interface StoredProduct {
 const QUOTES_KEY = "data/quotes.json";
 const PRODUCTS_KEY = "data/products.json";
 
+/**
+ * Lo ultimo que escribio ESTA instancia. El Blob tarda unos segundos en
+ * devolver lo recien guardado (el listado sigue reportando la version
+ * anterior), asi que sin esto una lectura inmediata despues de guardar
+ * devuelve datos viejos: justo lo que pasa al revalidar las paginas dentro
+ * de la misma peticion que guardo.
+ */
+const recienEscrito = new Map<string, { data: unknown; at: number }>();
+const VENTANA_MS = 2 * 60 * 1000;
+
 export async function getBlob<T>(key: string, fallback: T): Promise<T> {
+  const propio = recienEscrito.get(key);
+  const vigente = propio && Date.now() - propio.at < VENTANA_MS;
+
   try {
     const { blobs } = await list({ prefix: key });
-    if (blobs.length === 0) return fallback;
+    if (blobs.length === 0) {
+      return vigente ? (propio.data as T) : fallback;
+    }
+
+    // si nuestra escritura es mas nueva que lo que reporta el listado,
+    // el CDN va atrasado: vale mas lo que tenemos en memoria
+    const subido = new Date(blobs[0].uploadedAt).getTime();
+    if (vigente && Number.isFinite(subido) && propio.at > subido) {
+      return propio.data as T;
+    }
 
     // El blob se reescribe siempre con la misma ruta, asi que el CDN puede
     // devolver la version anterior justo despues de guardar. La marca de
@@ -49,7 +71,7 @@ export async function getBlob<T>(key: string, fallback: T): Promise<T> {
     if (!res.ok) return fallback;
     return (await res.json()) as T;
   } catch {
-    return fallback;
+    return vigente ? (propio.data as T) : fallback;
   }
 }
 
@@ -68,6 +90,9 @@ export async function setBlob<T>(key: string, data: T): Promise<void> {
     contentType: "application/json",
     addRandomSuffix: false,
   });
+
+  // se recuerda para que una lectura inmediata no devuelva la version vieja
+  recienEscrito.set(key, { data, at: Date.now() });
 }
 
 // QUOTES

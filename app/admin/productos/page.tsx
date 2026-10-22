@@ -103,14 +103,6 @@ export default function CatalogoAdminPage() {
   const [editando, setEditando] = useState<ArticuloManual | null>(null);
   const [esNuevo, setEsNuevo] = useState(false);
 
-  async function cargar() {
-    const r = await fetch("/api/catalogo");
-    if (!r.ok) throw new Error("No se pudo cargar el catálogo");
-    const d = await r.json();
-    setFilas(d.articulos ?? []);
-    setEditable(d.editable ?? { manuales: [], ajustes: {} });
-    setCategorias(d.categorias ?? []);
-  }
 
   useEffect(() => {
     let vivo = true;
@@ -151,7 +143,9 @@ export default function CatalogoAdminPage() {
         const d = await r.json().catch(() => ({}));
         throw new Error(d.error || "Error al guardar");
       }
-      await cargar();
+      // No se vuelve a leer el Blob: tarda unos segundos en devolver lo recien
+      // escrito y devolveria la version anterior. El estado local ya refleja
+      // los cambios, fila por fila.
       setSucio(false);
       notificar(true, "Catálogo publicado");
     } catch (e) {
@@ -268,6 +262,27 @@ export default function CatalogoAdminPage() {
         manuales: prev.manuales.map((m) => (m.id === draft.id ? draft : m)),
       };
     });
+    // la tabla se actualiza en el momento, sin releer del servidor
+    setFilas((prev) => {
+      const fila = (m: ArticuloManual): Fila => ({
+        ...m,
+        categoriaSlug: slug(m.categoria),
+        origen: "propio",
+        oculto: !m.activo,
+        precioBase: m.precio,
+        precioAjustado: null,
+      });
+      if (esNuevo) {
+        const usados = new Set([...editable.manuales.map((m) => m.id), ...prev.map((f) => f.id)]);
+        let id = slug(draft.nombre) || `articulo-${Date.now()}`;
+        let n = 2;
+        while (usados.has(id)) id = `${slug(draft.nombre)}-${n++}`;
+        const codigo = draft.codigo.trim() || `PZ-${id.slice(0, 10).toUpperCase()}`;
+        return [fila({ ...draft, id, codigo }), ...prev];
+      }
+      return prev.map((f) => (f.id === draft.id ? fila(draft) : f));
+    });
+
     setSucio(true);
     setEditando(null);
     notificar(true, "Guardado. Publica los cambios para que se vean en el sitio.");
