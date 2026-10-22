@@ -25,9 +25,15 @@ export const site = {
   phoneDisplay: "+52 56 3186 3225",
   /** Formato E.164 para los enlaces tel: y los datos estructurados */
   phoneE164: "+525631863225",
-  /** Vacio a proposito: no se ha confirmado una direccion de correo.
-   *  Al llenarlo aparece en header, footer y datos estructurados. */
-  email: "",
+  /** Contacto principal: aparece en el header y en los datos estructurados */
+  email: "ventas@promozone.com.mx",
+
+  /** Todas las cuentas, con su etiqueta. Se listan en el pie de pagina. */
+  emails: [
+    { etiqueta: "Ventas", direccion: "ventas@promozone.com.mx" },
+    { etiqueta: "Ventas 2", direccion: "ventas1@promozone.com.mx" },
+    { etiqueta: "Administración", direccion: "administracion@promozone.com.mx" },
+  ],
 
   /** Zona de servicio declarada en los datos estructurados */
   areaServed: "México",

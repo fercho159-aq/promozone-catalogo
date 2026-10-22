@@ -60,13 +60,17 @@ export default async function Footer() {
                   {site.phoneDisplay}
                 </a>
               </li>
-              {site.email && (
-                <li>
-                  <a href={`mailto:${site.email}`} className="transition hover:text-white">
-                    {site.email}
+              {site.emails.map((c) => (
+                <li key={c.direccion}>
+                  <a
+                    href={`mailto:${c.direccion}`}
+                    className="transition hover:text-white"
+                  >
+                    <span className="text-navy-400">{c.etiqueta}: </span>
+                    {c.direccion}
                   </a>
                 </li>
-              )}
+              ))}
               <li className="pt-2">
                 <Link href="/catalogo" className="transition hover:text-white">
                   Catálogo completo
