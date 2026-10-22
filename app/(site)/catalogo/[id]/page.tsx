@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ArticuloProveedorCard from "@/components/ArticuloProveedorCard";
-import ArticuloProveedorDetalle from "@/components/ArticuloProveedorDetalle";
-import {
-  getArticuloProveedor,
-  getCatalogoProveedor,
-} from "@/lib/proveedor";
-import { precioPublico, site } from "@/lib/site";
+import ArticuloCard from "@/components/ArticuloCard";
+import ArticuloDetalle from "@/components/ArticuloDetalle";
+import { getArticuloCatalogo, getRelacionados } from "@/lib/unificado";
+import { site } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -17,14 +14,14 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const a = await getArticuloProveedor(id);
+  const a = await getArticuloCatalogo(id);
   if (!a) return { title: "Artículo no encontrado" };
 
   const title = `${a.nombre} Personalizado — ${a.codigo}`;
   const description =
     `${a.descripcion || `${a.nombre} personalizable con el logo de tu empresa.`} ` +
     `${a.composicion ? `Material: ${a.composicion}. ` : ""}` +
-    `Desde $${precioPublico(a.precioProveedor).toLocaleString("es-MX")} MXN.`;
+    `Desde $${a.precio.toLocaleString("es-MX")} MXN.`;
 
   return {
     title,
@@ -46,23 +43,13 @@ export default async function ArticuloPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const articulo = await getArticuloProveedor(id);
+  const articulo = await getArticuloCatalogo(id);
 
   if (!articulo) {
     notFound();
   }
 
-  const precio = precioPublico(articulo.precioProveedor);
-
-  const todos = await getCatalogoProveedor();
-  const relacionados = todos
-    .filter(
-      (a) =>
-        a.id !== articulo.id &&
-        (a.subcategoria === articulo.subcategoria ||
-          a.categoriaSlug === articulo.categoriaSlug),
-    )
-    .slice(0, 4);
+  const relacionados = await getRelacionados(articulo);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -74,7 +61,7 @@ export default async function ArticuloPage({
           {
             "@type": "ListItem",
             position: 2,
-            name: "Catálogo completo",
+            name: "Catálogo",
             item: `${site.url}/catalogo`,
           },
           {
@@ -99,7 +86,7 @@ export default async function ArticuloPage({
           "@type": "Offer",
           url: `${site.url}/catalogo/${articulo.id}`,
           priceCurrency: "MXN",
-          price: precio.toFixed(2),
+          price: articulo.precio.toFixed(2),
           availability:
             articulo.inventario > 0
               ? "https://schema.org/InStock"
@@ -124,7 +111,7 @@ export default async function ArticuloPage({
         </Link>
         <span className="mx-2" aria-hidden="true">/</span>
         <Link href="/catalogo" className="transition hover:text-brand-600">
-          Catálogo completo
+          Catálogo
         </Link>
         <span className="mx-2" aria-hidden="true">/</span>
         <Link
@@ -137,7 +124,7 @@ export default async function ArticuloPage({
         <span className="font-medium text-navy-700">{articulo.nombre}</span>
       </nav>
 
-      <ArticuloProveedorDetalle articulo={articulo} precio={precio} />
+      <ArticuloDetalle articulo={articulo} />
 
       {relacionados.length > 0 && (
         <section className="mt-16">
@@ -146,7 +133,7 @@ export default async function ArticuloPage({
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
             {relacionados.map((a) => (
-              <ArticuloProveedorCard key={a.id} articulo={a} />
+              <ArticuloCard key={a.id} articulo={a} />
             ))}
           </div>
         </section>

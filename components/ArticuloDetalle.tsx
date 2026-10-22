@@ -2,22 +2,20 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import type { ArticuloProveedor } from "@/lib/proveedor";
+import type { ArticuloCatalogo } from "@/lib/unificado";
 import { site } from "@/lib/site";
 
-export default function ArticuloProveedorDetalle({
+export default function ArticuloDetalle({
   articulo,
-  precio,
 }: {
-  articulo: ArticuloProveedor;
-  /** precio publico ya calculado en el servidor */
-  precio: number;
+  articulo: ArticuloCatalogo;
 }) {
   const [imagen, setImagen] = useState(articulo.imagen ?? "");
   const [color, setColor] = useState(articulo.colores[0]?.color ?? "");
   const [cantidad, setCantidad] = useState(10);
   const [enviado, setEnviado] = useState(false);
 
+  const precio = articulo.precio;
   const total = precio * cantidad;
 
   function cotizar() {

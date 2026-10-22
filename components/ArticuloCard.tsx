@@ -1,15 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ArticuloProveedor } from "@/lib/proveedor";
-import { precioPublico } from "@/lib/site";
+import type { ArticuloCatalogo } from "@/lib/unificado";
 
-export default function ArticuloProveedorCard({
+export default function ArticuloCard({
   articulo,
 }: {
-  articulo: ArticuloProveedor;
+  articulo: ArticuloCatalogo;
 }) {
-  const precio = precioPublico(articulo.precioProveedor);
-
   return (
     <Link
       href={`/catalogo/${articulo.id}`}
@@ -58,7 +55,7 @@ export default function ArticuloProveedorCard({
 
         <div className="mt-auto flex items-end justify-between pt-3">
           <span className="font-display text-lg font-extrabold text-navy-800">
-            ${precio.toLocaleString("es-MX")}
+            ${articulo.precio.toLocaleString("es-MX")}
             <span className="ml-1 text-xs font-medium text-navy-400">MXN</span>
           </span>
           {articulo.colores.length > 1 && (

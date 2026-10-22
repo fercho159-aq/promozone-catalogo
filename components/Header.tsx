@@ -8,12 +8,11 @@ import type { Promocion } from "@/lib/contenido";
 import { site, whatsappLink } from "@/lib/site";
 
 export type CategoriaMenu = {
-  name: string;
+  nombre: string;
   slug: string;
-  icon: string;
-  description: string;
-  count: number;
-  imagen: string;
+  total: number;
+  /** foto del primer articulo de la categoria; puede faltar */
+  imagen: string | null;
 };
 
 export default function Header({
@@ -127,24 +126,26 @@ export default function Header({
                     {categorias.map((cat) => (
                       <Link
                         key={cat.slug}
-                        href={`/categoria/${cat.slug}`}
+                        href={`/catalogo?categoria=${cat.slug}`}
                         className="group flex items-center gap-3 rounded-xl border border-transparent p-2.5 transition hover:border-navy-100 hover:bg-navy-50"
                       >
                         <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-navy-50 to-cream-100">
-                          <Image
-                            src={cat.imagen}
-                            alt=""
-                            width={56}
-                            height={56}
-                            className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
-                          />
+                          {cat.imagen && (
+                            <Image
+                              src={cat.imagen}
+                              alt=""
+                              width={56}
+                              height={56}
+                              className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          )}
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-semibold text-navy-800 transition-colors group-hover:text-brand-600">
-                            {cat.name}
+                            {cat.nombre}
                           </span>
                           <span className="block text-xs text-navy-400">
-                            {cat.count} productos
+                            {cat.total} artículos
                           </span>
                         </span>
                       </Link>
@@ -154,7 +155,7 @@ export default function Header({
                       href="/catalogo"
                       className="col-span-4 mt-1 flex items-center justify-center gap-2 rounded-xl border border-dashed border-navy-200 py-3 text-sm font-semibold text-navy-700 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
                     >
-                      Ver el catálogo completo del proveedor →
+                      Ver todo el catálogo →
                     </Link>
                   </div>
 
@@ -317,22 +318,24 @@ export default function Header({
               {categorias.map((cat) => (
                 <li key={cat.slug}>
                   <Link
-                    href={`/categoria/${cat.slug}`}
+                    href={`/catalogo?categoria=${cat.slug}`}
                     className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-white/10"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
-                      <Image
-                        src={cat.imagen}
-                        alt=""
-                        width={44}
-                        height={44}
-                        className="h-8 w-8 object-contain"
-                      />
+                      {cat.imagen && (
+                        <Image
+                          src={cat.imagen}
+                          alt=""
+                          width={44}
+                          height={44}
+                          className="h-8 w-8 object-contain"
+                        />
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">{cat.name}</span>
+                      <span className="block text-sm font-semibold">{cat.nombre}</span>
                       <span className="block truncate text-xs text-navy-300">
-                        {cat.count} productos
+                        {cat.total} artículos
                       </span>
                     </span>
                     <span className="text-navy-400" aria-hidden="true">

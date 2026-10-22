@@ -20,6 +20,40 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  async redirects() {
+    // Las rutas del catalogo viejo se unificaron en /catalogo. Se redirige en
+    // vez de borrar para no dejar enlaces muertos: los ids de producto se
+    // conservaron al migrar, asi que la equivalencia es 1 a 1.
+    const categorias: Record<string, string> = {
+      termos: "bebidas",
+      tazas: "bebidas",
+      cilindros: "bebidas",
+      textiles: "textil",
+      escritura: "boligrafos",
+      tecnologia: "tecnologia",
+      bolsas: "tiempo-libre",
+      llaveros: "llaveros",
+    };
+
+    return [
+      {
+        source: "/producto/:id",
+        destination: "/catalogo/:id",
+        permanent: true,
+      },
+      ...Object.entries(categorias).map(([viejo, nuevo]) => ({
+        source: `/categoria/${viejo}`,
+        destination: `/catalogo?categoria=${nuevo}`,
+        permanent: true,
+      })),
+      {
+        // cualquier otra categoria vieja cae al catalogo completo
+        source: "/categoria/:slug",
+        destination: "/catalogo",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

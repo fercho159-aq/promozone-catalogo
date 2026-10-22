@@ -2,9 +2,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PromoModal from "@/components/PromoModal";
 import WhatsAppFlotante from "@/components/WhatsAppFlotante";
-import { getCategoriesWithCounts } from "@/lib/catalog";
 import { getContenidoPublico } from "@/lib/contenido";
-import { categoryImages } from "@/lib/products";
+import { getCatalogoUnificado, getCategoriasCatalogo } from "@/lib/unificado";
 
 /**
  * Chrome del sitio publico. El panel (/admin) queda fuera de este grupo, asi
@@ -15,14 +14,19 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [cats, contenido] = await Promise.all([
-    getCategoriesWithCounts(),
+  const [cats, contenido, articulos] = await Promise.all([
+    getCategoriasCatalogo(),
     getContenidoPublico(),
+    getCatalogoUnificado(),
   ]);
 
-  const categorias = cats.map((c) => ({
-    ...c,
-    imagen: categoryImages[c.slug] ?? "/products/termo-niza.jpeg",
+  // cada categoria toma la foto del primer articulo que tenga imagen
+  const categorias = cats.slice(0, 12).map((c) => ({
+    nombre: c.nombre,
+    slug: c.slug,
+    total: c.total,
+    imagen:
+      articulos.find((a) => a.categoriaSlug === c.slug && a.imagen)?.imagen ?? null,
   }));
 
   return (

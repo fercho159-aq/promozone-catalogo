@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import ArticuloProveedorCard from "@/components/ArticuloProveedorCard";
-import { buscarEnProveedor, getCategoriasProveedor } from "@/lib/proveedor";
+import ArticuloCard from "@/components/ArticuloCard";
+import { buscarEnCatalogo, getCategoriasCatalogo } from "@/lib/unificado";
 import { site, whatsappLink } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -47,8 +47,8 @@ export default async function CatalogoPage({
   const pagina = Number(sp.pagina) || 1;
 
   const [resultado, categorias] = await Promise.all([
-    buscarEnProveedor({ q, categoria, pagina }),
-    getCategoriasProveedor(),
+    buscarEnCatalogo({ q, categoria, pagina }),
+    getCategoriasCatalogo(),
   ]);
 
   const { items, total, totalGeneral, totalPaginas } = resultado;
@@ -189,7 +189,7 @@ export default async function CatalogoPage({
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
               {items.map((a) => (
-                <ArticuloProveedorCard key={a.id} articulo={a} />
+                <ArticuloCard key={a.id} articulo={a} />
               ))}
             </div>
           )}

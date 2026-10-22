@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import { categories } from "@/lib/products";
+import { getCategoriasCatalogo } from "@/lib/unificado";
 import { site, whatsappLink } from "@/lib/site";
 
-export default function Footer() {
+export default async function Footer() {
+  const categorias = await getCategoriasCatalogo();
   const year = new Date().getFullYear();
 
   return (
@@ -35,13 +36,13 @@ export default function Footer() {
               Categorías
             </h2>
             <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
-              {categories.map((cat) => (
+              {categorias.slice(0, 10).map((cat) => (
                 <li key={cat.slug}>
                   <Link
-                    href={`/categoria/${cat.slug}`}
+                    href={`/catalogo?categoria=${cat.slug}`}
                     className="transition hover:text-white"
                   >
-                    {cat.name}
+                    {cat.nombre}
                   </Link>
                 </li>
               ))}

@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HeroCarousel from "@/components/HeroCarousel";
-import ProductCard from "@/components/ProductCard";
-import ArticuloProveedorCard from "@/components/ArticuloProveedorCard";
+import ArticuloCard from "@/components/ArticuloCard";
 import { ComoFunciona, Oferta, Problema } from "@/components/home/Secciones";
 import { CasosExito, Testimonios } from "@/components/home/PruebaSocial";
-import { getCatalog } from "@/lib/catalog";
 import { getContenidoPublico } from "@/lib/contenido";
-import { getCatalogoProveedor } from "@/lib/proveedor";
+import { getCatalogoUnificado } from "@/lib/unificado";
 import { site } from "@/lib/site";
 
 // el catalogo vive en Blob y lo edita el admin: refresco cada 5 min
@@ -23,13 +21,11 @@ export const metadata: Metadata = {
 const EN_PORTADA = 24;
 
 export default async function Home() {
-  const [products, contenido, articulos] = await Promise.all([
-    getCatalog(),
+  const [contenido, articulos] = await Promise.all([
     getContenidoPublico(),
-    getCatalogoProveedor(),
+    getCatalogoUnificado(),
   ]);
 
-  const destacados = products.slice(0, 8);
   const enPortada = articulos.slice(0, EN_PORTADA);
 
   return (
@@ -79,7 +75,7 @@ export default async function Home() {
             <>
               <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
                 {enPortada.map((a) => (
-                  <ArticuloProveedorCard key={a.id} articulo={a} />
+                  <ArticuloCard key={a.id} articulo={a} />
                 ))}
               </div>
 
@@ -114,29 +110,6 @@ export default async function Home() {
       {/* S */}
       <ComoFunciona />
 
-      {/* seleccion propia */}
-      {destacados.length > 0 && (
-        <section className="bg-navy-50 py-14">
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <h2 className="font-display text-3xl font-extrabold text-navy-900">
-                Productos destacados
-              </h2>
-              <Link
-                href="/catalogo"
-                className="text-sm font-semibold text-brand-600 transition hover:text-brand-700"
-              >
-                Ver el catálogo completo →
-              </Link>
-            </div>
-            <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-              {destacados.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* T */}
       <Testimonios testimonios={contenido.testimonios} />
