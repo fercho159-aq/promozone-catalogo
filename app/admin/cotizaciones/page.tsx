@@ -64,6 +64,21 @@ export default function CotizacionesPage() {
     [filtered],
   );
 
+  async function borrar(q: Quote) {
+    if (!confirm(`¿Eliminar la cotización de ${q.clientName}?`)) return;
+    try {
+      const r = await fetch("/api/quotes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: q.id }),
+      });
+      if (!r.ok) throw new Error("No se pudo eliminar");
+      setQuotes((prev) => prev.filter((x) => x.id !== q.id));
+    } catch {
+      alert("No se pudo eliminar la cotización");
+    }
+  }
+
   function downloadCsv() {
     // BOM para que Excel en español respete los acentos
     const blob = new Blob(["﻿" + toCsv(filtered)], {
@@ -138,6 +153,7 @@ export default function CotizacionesPage() {
                   <th className="px-4 py-3 text-right font-semibold text-navy-600">Desc.</th>
                   <th className="px-4 py-3 text-right font-semibold text-navy-600">Total</th>
                   <th className="px-4 py-3 text-left font-semibold text-navy-600">Fecha</th>
+                  <th className="px-4 py-3 text-center font-semibold text-navy-600"></th>
                 </tr>
               </thead>
               <tbody>
@@ -169,6 +185,14 @@ export default function CotizacionesPage() {
                       ${q.total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3 text-navy-500">{q.date}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => borrar(q)}
+                        className="text-xs font-medium text-brand-600 hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

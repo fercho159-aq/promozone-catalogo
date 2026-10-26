@@ -14,26 +14,24 @@ export default function ArticuloDetalle({
   const [color, setColor] = useState(articulo.colores[0]?.color ?? "");
   const [cantidad, setCantidad] = useState(10);
   const [enviado, setEnviado] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [generando, setGenerando] = useState(false);
 
   const precio = articulo.precio;
   const total = precio * cantidad;
 
-  function cotizar() {
-    const mensaje =
-      `Hola ${site.name}, quiero cotizar:\n\n` +
-      `📦 *${articulo.nombre}*\n` +
-      `🔖 Código: ${articulo.codigo}\n` +
-      (color ? `🎨 Color: ${color}\n` : "") +
-      `📊 Cantidad: ${cantidad} piezas\n` +
-      `💵 Estimado: $${total.toLocaleString("es-MX")} MXN`;
-
+  /** Deja constancia de la cotizacion en el panel */
+  function registrar() {
     fetch("/api/quotes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        clientName: "Cotización desde catálogo",
-        clientPhone: "",
-        clientCompany: "",
+        clientName: nombre.trim() || "Cotización desde catálogo",
+        clientPhone: telefono.trim(),
+        clientCompany: empresa.trim(),
         productId: articulo.codigo,
         productName: articulo.nombre,
         productColor: color,
@@ -44,6 +42,49 @@ export default function ArticuloDetalle({
         date: new Date().toLocaleDateString("es-MX"),
       }),
     }).catch(() => {});
+  }
+
+  async function descargarPDF() {
+    if (!nombre.trim()) {
+      setAviso("Escribe tu nombre para generar la cotización.");
+      return;
+    }
+    setAviso("");
+    setGenerando(true);
+    try {
+      // jsPDF pesa bastante: se carga solo cuando hace falta
+      const { generateQuotePDF } = await import("@/lib/generatePDF");
+      const doc = generateQuotePDF({
+        clientName: nombre.trim(),
+        clientPhone: telefono.trim(),
+        clientCompany: empresa.trim(),
+        productName: `${articulo.nombre} (${articulo.codigo})`,
+        productColor: color,
+        quantity: cantidad,
+        unitPrice: precio,
+        discount: 0,
+        total,
+        date: new Date().toLocaleDateString("es-MX"),
+      });
+      doc.save(`Cotizacion_${articulo.nombre.replace(/\s+/g, "_")}.pdf`);
+      registrar();
+    } catch {
+      setAviso("No se pudo generar el PDF. Intenta de nuevo.");
+    }
+    setGenerando(false);
+  }
+
+  function cotizar() {
+    const mensaje =
+      `Hola ${site.name}, quiero cotizar:\n\n` +
+      (nombre.trim() ? `👤 ${nombre.trim()}${empresa.trim() ? ` — ${empresa.trim()}` : ""}\n` : "") +
+      `📦 *${articulo.nombre}*\n` +
+      `🔖 Código: ${articulo.codigo}\n` +
+      (color ? `🎨 Color: ${color}\n` : "") +
+      `📊 Cantidad: ${cantidad} piezas\n` +
+      `💵 Estimado: $${total.toLocaleString("es-MX")} MXN`;
+
+    registrar();
 
     window.open(
       `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(mensaje)}`,
@@ -225,9 +266,57 @@ export default function ArticuloDetalle({
           </p>
         </div>
 
+        {/* datos para la cotizacion */}
+        <div className="mt-5 space-y-2">
+          <h2 className="text-sm font-semibold text-navy-700">
+            Tus datos para la cotización
+          </h2>
+          <input
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Tu nombre *"
+            aria-label="Tu nombre"
+            className="w-full rounded-lg border border-navy-200 px-4 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+          />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              placeholder="Teléfono"
+              aria-label="Tu teléfono"
+              type="tel"
+              className="w-full rounded-lg border border-navy-200 px-4 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+            />
+            <input
+              value={empresa}
+              onChange={(e) => setEmpresa(e.target.value)}
+              placeholder="Empresa"
+              aria-label="Tu empresa"
+              className="w-full rounded-lg border border-navy-200 px-4 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+            />
+          </div>
+        </div>
+
+        {aviso && (
+          <p role="alert" className="mt-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
+            {aviso}
+          </p>
+        )}
+
+        <button
+          onClick={descargarPDF}
+          disabled={generando}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-navy-800 py-3.5 font-display text-lg font-bold text-white transition hover:bg-navy-700 hover:shadow-lg disabled:opacity-60"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {generando ? "Generando…" : "Descargar cotización en PDF"}
+        </button>
+
         <button
           onClick={cotizar}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp py-3.5 font-display text-lg font-bold text-white transition hover:bg-whatsapp-dark hover:shadow-lg"
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp py-3.5 font-display text-lg font-bold text-white transition hover:bg-whatsapp-dark hover:shadow-lg"
         >
           <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.638l4.68-1.318A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.4 0-4.637-.773-6.465-2.088l-.26-.182-3.2.9.83-3.088-.206-.278A9.96 9.96 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z" />

@@ -117,6 +117,11 @@ export async function getStoredProducts(): Promise<StoredProduct[]> {
   return getBlob<StoredProduct[]>(PRODUCTS_KEY, []);
 }
 
+/** Reescribe la lista completa de cotizaciones */
+export async function saveQuotes(quotes: Quote[]): Promise<void> {
+  await setBlob(QUOTES_KEY, quotes);
+}
+
 export async function saveStoredProducts(products: StoredProduct[]): Promise<void> {
   await setBlob(PRODUCTS_KEY, products);
 }
