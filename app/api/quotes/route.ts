@@ -3,6 +3,11 @@ import { getQuotes, addQuote, getQuoteStats, saveQuotes } from "@/lib/store";
 import { isAuthenticated } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
+  // Aqui viven nombres y telefonos de clientes: solo desde el panel.
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const stats = searchParams.get("stats");
 
