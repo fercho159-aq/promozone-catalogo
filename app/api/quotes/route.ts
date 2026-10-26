@@ -12,6 +12,16 @@ export async function GET(req: NextRequest) {
   }
 
   const quotes = await getQuotes();
+
+  // solo el conteo de las nuevas, para el aviso del menu del panel
+  const desde = Number(searchParams.get("desde"));
+  if (Number.isFinite(desde) && searchParams.has("desde")) {
+    return NextResponse.json({
+      nuevas: quotes.filter((q) => (q.timestamp || 0) > desde).length,
+      total: quotes.length,
+    });
+  }
+
   return NextResponse.json(quotes);
 }
 
@@ -38,6 +48,8 @@ export async function DELETE(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const quote = await addQuote(body);
+  // el origen llega del navegador: solo se aceptan los dos valores conocidos
+  const origen = body.origen === "pdf" || body.origen === "whatsapp" ? body.origen : undefined;
+  const quote = await addQuote({ ...body, origen });
   return NextResponse.json(quote, { status: 201 });
 }

@@ -17,7 +17,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [nuevas, setNuevas] = useState(0);
   const pathname = usePathname();
+
+  // aviso de cotizaciones sin revisar en este navegador
+  useEffect(() => {
+    if (status !== "in") return;
+    let vivo = true;
+
+    const revisar = () => {
+      let visto = 0;
+      try {
+        visto = Number(localStorage.getItem("promozone:cotizaciones-vistas")) || 0;
+      } catch {
+        visto = 0;
+      }
+      fetch(`/api/quotes?desde=${visto}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => {
+          if (vivo) setNuevas(Number(d?.nuevas) || 0);
+        })
+        .catch(() => {});
+    };
+
+    revisar();
+    window.addEventListener("promozone:cotizaciones-vistas", revisar);
+    return () => {
+      vivo = false;
+      window.removeEventListener("promozone:cotizaciones-vistas", revisar);
+    };
+  }, [status, pathname]);
 
   useEffect(() => {
     fetch("/api/admin/login")
@@ -125,6 +154,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   }`}
                 >
                   <span aria-hidden="true">{link.icon}</span> {link.label}
+                  {link.href === "/admin/cotizaciones" && nuevas > 0 && (
+                    <span
+                      className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${
+                        pathname === link.href
+                          ? "bg-white text-brand-700"
+                          : "bg-brand-600 text-white"
+                      }`}
+                    >
+                      {nuevas}
+                      <span className="sr-only"> cotizaciones sin revisar</span>
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>

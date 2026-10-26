@@ -14,6 +14,8 @@ export interface Quote {
   total: number;
   date: string;
   timestamp: number;
+  /** Por donde pidio la cotizacion. Las viejas no lo traen. */
+  origen?: "pdf" | "whatsapp";
 }
 
 export interface StoredProduct {

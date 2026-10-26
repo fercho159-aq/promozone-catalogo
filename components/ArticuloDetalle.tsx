@@ -24,11 +24,12 @@ export default function ArticuloDetalle({
   const total = precio * cantidad;
 
   /** Deja constancia de la cotizacion en el panel */
-  function registrar() {
+  function registrar(origen: "pdf" | "whatsapp") {
     fetch("/api/quotes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        origen,
         clientName: nombre.trim() || "Cotización desde catálogo",
         clientPhone: telefono.trim(),
         clientCompany: empresa.trim(),
@@ -67,7 +68,7 @@ export default function ArticuloDetalle({
         date: new Date().toLocaleDateString("es-MX"),
       });
       doc.save(`Cotizacion_${articulo.nombre.replace(/\s+/g, "_")}.pdf`);
-      registrar();
+      registrar("pdf");
     } catch {
       setAviso("No se pudo generar el PDF. Intenta de nuevo.");
     }
@@ -84,7 +85,7 @@ export default function ArticuloDetalle({
       `📊 Cantidad: ${cantidad} piezas\n` +
       `💵 Estimado: $${total.toLocaleString("es-MX")} MXN`;
 
-    registrar();
+    registrar("whatsapp");
 
     window.open(
       `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(mensaje)}`,
