@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 import type { ArticuloCatalogo } from "@/lib/unificado";
 import { site } from "@/lib/site";
+import VistaLogo, { type LogoCargado } from "@/components/VistaLogo";
+import { componerConLogo, type PosicionLogo } from "@/lib/composicion";
 
 export default function ArticuloDetalle({
   articulo,
@@ -19,6 +21,8 @@ export default function ArticuloDetalle({
   const [empresa, setEmpresa] = useState("");
   const [aviso, setAviso] = useState("");
   const [generando, setGenerando] = useState(false);
+  const [logo, setLogo] = useState<LogoCargado | null>(null);
+  const [posicion, setPosicion] = useState<PosicionLogo>({ x: 0.5, y: 0.5, escala: 0.3 });
 
   const precio = articulo.precio;
   const total = precio * cantidad;
@@ -53,9 +57,14 @@ export default function ArticuloDetalle({
     setAviso("");
     setGenerando(true);
     try {
+      // si subio su logo, el PDF se lleva la vista previa armada
+      const vistaPrevia =
+        logo && imagen ? await componerConLogo(imagen, logo.url, posicion) : null;
+
       // jsPDF pesa bastante: se carga solo cuando hace falta
       const { generateQuotePDF } = await import("@/lib/generatePDF");
       const doc = generateQuotePDF({
+        vistaPrevia,
         clientName: nombre.trim(),
         clientPhone: telefono.trim(),
         clientCompany: empresa.trim(),
@@ -97,21 +106,17 @@ export default function ArticuloDetalle({
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
       {/* galeria */}
-      <div>
-        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-navy-100 bg-white p-6">
-          {imagen ? (
-            <Image
-              src={imagen}
-              alt={`${articulo.nombre} — ${articulo.codigo}`}
-              width={700}
-              height={700}
-              priority
-              className="h-full w-full object-contain"
-            />
-          ) : (
-            <span className="text-sm text-navy-300">Sin imagen disponible</span>
-          )}
-        </div>
+      {/* min-w-0: sin esto la tira de miniaturas ensancha la columna en vez
+          de desplazarse, y la pagina se sale de la pantalla en el celular */}
+      <div className="min-w-0">
+        <VistaLogo
+          imagen={imagen}
+          alt={`${articulo.nombre} — ${articulo.codigo}`}
+          logo={logo}
+          posicion={posicion}
+          onLogo={setLogo}
+          onPosicion={setPosicion}
+        />
 
         {articulo.imagenes.length > 1 && (
           <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">

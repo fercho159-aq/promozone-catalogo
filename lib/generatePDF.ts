@@ -11,6 +11,8 @@ interface QuoteData {
   discount: number;
   total: number;
   date: string;
+  /** Producto con el logo del cliente encima, ya compuesto. Opcional. */
+  vistaPrevia?: string | null;
 }
 
 export function generateQuotePDF(data: QuoteData): jsPDF {
@@ -108,13 +110,33 @@ export function generateQuotePDF(data: QuoteData): jsPDF {
   doc.text("TOTAL:", 140, totalLineY + 2);
   doc.text(`$${data.total.toFixed(2)} MXN`, 175, totalLineY + 2);
 
+  // Vista previa con el logo del cliente, si la armo en la pagina
+  if (data.vistaPrevia) {
+    const previaY = totalLineY + 12;
+    doc.setTextColor(16, 42, 74);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Vista previa con tu logo", 20, previaY);
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text("Imagen de referencia, no es una prueba de impresión.", 20, previaY + 5);
+    try {
+      doc.addImage(data.vistaPrevia, "JPEG", 20, previaY + 9, 46, 46);
+    } catch {
+      // si la imagen no se pudo insertar, la cotizacion sale igual
+    }
+  }
+
   // Footer
   doc.setTextColor(150, 150, 150);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   const footerY = 270;
-  doc.text("Esta cotización es válida por 15 días a partir de la fecha de emisión.", 20, footerY);
-  doc.text("Los precios incluyen personalización con su logo.", 20, footerY + 7);
+  // Mismo texto que la pagina del producto: ahi se dice que el precio NO
+  // incluye personalizacion, y el PDF afirmaba lo contrario.
+  doc.text("Precio de referencia sin IVA ni personalización.", 20, footerY);
+  doc.text("Te confirmamos el precio final por WhatsApp.", 20, footerY + 7);
   doc.text("PromoZone - Más que promocionales | promozone.com.mx | WhatsApp: 55 5074 6699", 20, footerY + 14);
 
   return doc;
